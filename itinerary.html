@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI가 생성한 맞춤형 여행 일정표">
+    <title>여행 일정 | Plan.It</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Itinerary Page Specific Styles */
+        .itinerary-page {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #e8f0ff 0%, var(--bg-light) 100%);
+            padding-top: 80px;
+        }
+
+        .itinerary-page .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .itinerary-page .logo-text {
+            color: var(--text-primary);
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            font-family: inherit;
+            color: var(--text-secondary);
+            background: var(--bg-card);
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            border-radius: var(--border-radius-lg);
+            cursor: pointer;
+            transition: var(--transition-normal);
+        }
+
+        .back-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .itinerary-hero {
+            background: var(--gradient-primary);
+            padding: 3rem 2rem;
+            text-align: center;
+            color: var(--text-white);
+            margin-bottom: -2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .itinerary-hero::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 30px solid transparent;
+            border-right: 30px solid transparent;
+            border-top: 20px solid var(--secondary-color);
+        }
+
+        .route-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .route-city {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius-lg);
+            font-weight: 500;
+        }
+
+        .route-arrow {
+            font-size: 1.25rem;
+            opacity: 0.8;
+        }
+
+        .trip-meta {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1.5rem;
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .trip-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .itinerary-main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 4rem 2rem 3rem;
+        }
+
+        .itinerary-summary-card {
+            background: var(--bg-card);
+            border-radius: var(--border-radius-xl);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+            text-align: center;
+        }
+
+        .itinerary-summary-card h2 {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .itinerary-summary-card p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .days-timeline {
+            position: relative;
+        }
+
+        .days-timeline::before {
+            content: '';
+            position: absolute;
+            left: 24px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, var(--primary-color), var(--accent-color));
+            border-radius: 3px;
+        }
+
+        .timeline-day {
+            position: relative;
+            padding-left: 60px;
+            margin-bottom: 2rem;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: 12px;
+            top: 0;
+            width: 28px;
+            height: 28px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-white);
+            font-size: 0.85rem;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
+            z-index: 1;
+        }
+
+        .timeline-card {
+            background: var(--bg-card);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            transition: var(--transition-normal);
+        }
+
+        .timeline-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .no-itinerary {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: var(--bg-card);
+            border-radius: var(--border-radius-xl);
+            box-shadow: var(--shadow-md);
+        }
+
+        .no-itinerary-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .no-itinerary h2 {
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .no-itinerary p {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .create-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: inherit;
+            color: var(--text-white);
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: var(--border-radius-lg);
+            cursor: pointer;
+            transition: var(--transition-normal);
+            text-decoration: none;
+        }
+
+        .create-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 102, 255, 0.35);
+        }
+
+        .itinerary-footer-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 2px solid rgba(0, 0, 0, 0.05);
+        }
+
+        /* Print Styles */
+        @media print {
+
+            .navbar,
+            .itinerary-footer-actions {
+                display: none;
+            }
+
+            .itinerary-page {
+                padding-top: 0;
+            }
+
+            .timeline-card {
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+
+<body class="itinerary-page">
+    <!-- Navigation Bar -->
+    <nav class="navbar scrolled">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">✈️</span>
+                <span class="logo-text">Plan.It</span>
+            </a>
+            <button class="back-btn" onclick="location.href='index.html'">
+                <span>←</span>
+                <span>새 일정 만들기</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Itinerary Hero -->
+    <section class="itinerary-hero" id="itineraryHero">
+        <h1 id="heroTitle">🗺️ 여행 일정</h1>
+        <div class="route-display" id="routeDisplay">
+            <!-- 여행 경로가 동적으로 표시됨 -->
+        </div>
+        <div class="trip-meta" id="tripMeta">
+            <!-- 여행 정보가 표시됨 -->
+        </div>
+    </section>
+
+    <!-- Itinerary Content -->
+    <main class="itinerary-main">
+        <!-- Summary Card -->
+        <div class="itinerary-summary-card" id="summaryCard">
+            <h2 id="itineraryTitle">여행 일정</h2>
+            <p id="itinerarySummary">AI가 맞춤 설계한 특별한 여행 일정입니다.</p>
+        </div>
+
+        <!-- Days Timeline -->
+        <div class="days-timeline" id="daysTimeline">
+            <!-- 일별 일정이 동적으로 표시됨 -->
+        </div>
+
+        <!-- Travel Tips -->
+        <div class="itinerary-tips" id="itineraryTips" style="display: none;">
+            <!-- 여행 팁이 표시됨 -->
+        </div>
+
+        <!-- No Itinerary State -->
+        <div class="no-itinerary" id="noItinerary" style="display: none;">
+            <div class="no-itinerary-icon">📋</div>
+            <h2>아직 생성된 일정이 없습니다</h2>
+            <p>여행 정보를 입력하고 AI에게 맞춤 일정을 요청해보세요!</p>
+            <a href="index.html#travelForm" class="create-btn">
+                <span>✨</span>
+                <span>일정 생성하기</span>
+            </a>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="itinerary-footer-actions" id="footerActions">
+            <button class="btn-save-itinerary" id="printBtn">
+                <span>🖨️</span>
+                <span>인쇄하기</span>
+            </button>
+            <button class="btn-new-itinerary" onclick="location.href='index.html#travelForm'">
+                <span>🔄</span>
+                <span>새 일정 만들기</span>
+            </button>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <p>&copy; 2026 Plan.It. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // localStorage에서 일정 데이터 불러오기
+            const itineraryData = localStorage.getItem('travelItinerary');
+            const tripInfo = JSON.parse(localStorage.getItem('tripInfo') || '{}');
+
+            const heroTitle = document.getElementById('heroTitle');
+            const routeDisplay = document.getElementById('routeDisplay');
+            const tripMeta = document.getElementById('tripMeta');
+            const summaryCard = document.getElementById('summaryCard');
+            const daysTimeline = document.getElementById('daysTimeline');
+            const itineraryTips = document.getElementById('itineraryTips');
+            const noItinerary = document.getElementById('noItinerary');
+            const footerActions = document.getElementById('footerActions');
+            const printBtn = document.getElementById('printBtn');
+
+            if (!itineraryData) {
+                // 일정이 없으면 빈 상태 표시
+                summaryCard.style.display = 'none';
+                daysTimeline.style.display = 'none';
+                footerActions.style.display = 'none';
+                document.getElementById('itineraryHero').style.display = 'none';
+                noItinerary.style.display = 'block';
+                return;
+            }
+
+            const itinerary = JSON.parse(itineraryData);
+
+            // 여행 경로 표시
+            if (tripInfo.destinations && tripInfo.destinations.length > 0) {
+                routeDisplay.innerHTML = tripInfo.destinations.map((dest, i) => {
+                    const arrow = i < tripInfo.destinations.length - 1 ? '<span class="route-arrow">→</span>' : '';
+                    return `<span class="route-city">📍 ${dest.displayName || dest.name}</span>${arrow}`;
+                }).join('');
+            }
+
+            // 여행 정보 메타 표시
+            if (tripInfo.startDate && tripInfo.endDate) {
+                const days = Math.ceil((new Date(tripInfo.endDate) - new Date(tripInfo.startDate)) / (1000 * 60 * 60 * 24)) + 1;
+                tripMeta.innerHTML = `
+                    <span class="trip-meta-item">📅 ${tripInfo.startDate} ~ ${tripInfo.endDate}</span>
+                    <span class="trip-meta-item">⏱️ ${days}일</span>
+                `;
+            }
+
+            // 제목과 요약 업데이트
+            if (itinerary.title) {
+                document.getElementById('itineraryTitle').textContent = itinerary.title;
+                heroTitle.textContent = `🗺️ ${itinerary.title}`;
+            }
+            if (itinerary.summary) {
+                document.getElementById('itinerarySummary').textContent = itinerary.summary;
+            }
+
+            // 일별 일정 타임라인 표시
+            if (itinerary.days && itinerary.days.length > 0) {
+                daysTimeline.innerHTML = itinerary.days.map(day => `
+                    <div class="timeline-day">
+                        <div class="timeline-dot">${day.day}</div>
+                        <div class="timeline-card">
+                            <div class="day-header">
+                                <div class="day-number">Day ${day.day}</div>
+                                <div class="day-info">
+                                    <h3>${day.date || ''}</h3>
+                                    <p>${day.location || ''}</p>
+                                </div>
+                            </div>
+                            <div class="day-schedule">
+                                ${day.schedule.map(item => `
+                                    <div class="schedule-item">
+                                        <div class="schedule-time">${item.time}</div>
+                                        <div class="schedule-content">
+                                            <div class="schedule-activity">${item.activity}</div>
+                                            <div class="schedule-description">${item.description}</div>
+                                            <span class="schedule-type ${item.type}">${getTypeLabel(item.type)}</span>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // 여행 팁 표시
+            if (itinerary.tips && itinerary.tips.length > 0) {
+                itineraryTips.style.display = 'block';
+                itineraryTips.innerHTML = `
+                    <h4>💡 여행 팁</h4>
+                    <ul>
+                        ${itinerary.tips.map(tip => `<li>${tip}</li>`).join('')}
+                    </ul>
+                `;
+            }
+
+            // 인쇄 버튼
+            printBtn.addEventListener('click', function () {
+                window.print();
+            });
+
+            function getTypeLabel(type) {
+                const labels = {
+                    food: '🍽️ 맛집',
+                    activity: '🏄 액티비티',
+                    culture: '🎭 문화',
+                    nature: '🌿 자연',
+                    shopping: '🛍️ 쇼핑',
+                    transport: '🚗 이동'
+                };
+                return labels[type] || type;
+            }
+        });
+    </script>
+</body>
+
+</html>
