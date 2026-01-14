@@ -442,8 +442,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ===== Travel Form Functionality =====
 
-    // 선택된 여행지 배열
-    const destinations = [];
+    // 선택된 여행지 배열 (전역 변수 충돌 방지를 위해 주석 처리)
+    // const destinations = []; // REMOVED: Duplicate declaration conflicting with global destinations
     const MAX_DESTINATIONS = 5;
 
     // DOM 요소
@@ -788,6 +788,20 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // [Fix] 여행지 데이터 수집 함수 (누락된 함수 구현)
+    function collectDestinations() {
+        // destinationsContainer 내의 모든 입력 필드 값 수집
+        const inputs = document.querySelectorAll('#destinationsContainer .destination-input');
+        const results = [];
+        inputs.forEach(input => {
+            const val = input.value.trim();
+            if (val) {
+                results.push(val);
+            }
+        });
+        return results;
+    }
+
     // 폼 제출 핸들러
     if (travelPlanForm) {
         travelPlanForm.addEventListener('submit', async function (e) {
@@ -847,7 +861,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 hideLoading();
 
-                // 일정 데이터를 localStorage에 저장
+                // 일정 데이터를 localStorage에 저장 (현재 세션)
                 localStorage.setItem('travelItinerary', JSON.stringify(itinerary));
                 localStorage.setItem('tripInfo', JSON.stringify({
                     destinations,
@@ -856,6 +870,24 @@ document.addEventListener('DOMContentLoaded', function () {
                     companion,
                     styles
                 }));
+
+                // [Fix] 내 여행 목록(savedTrips)에 영구 저장 (프로필 연동용)
+                const savedTrips = JSON.parse(localStorage.getItem('savedTrips') || '[]');
+
+                const newTrip = {
+                    id: Date.now().toString(),
+                    title: itinerary.title || destinations.join(', ') + ' 여행',
+                    summary: itinerary.summary,
+                    startDate: startDate,
+                    endDate: endDate,
+                    destinations: destinations,
+                    days: itinerary.days, // 상세 일정 데이터 보존
+                    tips: itinerary.tips,
+                    createdAt: new Date().toISOString()
+                };
+
+                savedTrips.unshift(newTrip); // 최신순 추가
+                localStorage.setItem('savedTrips', JSON.stringify(savedTrips));
 
                 // 결과 페이지로 이동
                 window.location.href = 'itinerary.html';
