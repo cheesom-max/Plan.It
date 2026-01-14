@@ -11,6 +11,9 @@ CREATE TABLE IF NOT EXISTS profiles (
     email TEXT NOT NULL,
     nickname TEXT,
     avatar_url TEXT,
+    travel_styles TEXT[],
+    preferred_companion TEXT,
+    preferred_budget TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
