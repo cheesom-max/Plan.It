@@ -1179,12 +1179,29 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // 로그인 상태 UI 업데이트
-    function updateUIForLoggedInUser(user) {
+    async function updateUIForLoggedInUser(user) {
         const authButtons = document.getElementById('authButtons');
         if (authButtons) authButtons.style.display = 'none';
+
         if (userProfile) {
             userProfile.style.display = 'flex';
-            if (profileEmail) profileEmail.textContent = user.email;
+
+            // 기본값은 이메일
+            let displayName = user.email;
+
+            // 닉네임이 있는지 확인하고 있으면 우선 표시
+            try {
+                if (typeof Auth !== 'undefined') {
+                    const profile = await Auth.getProfile();
+                    if (profile && profile.nickname) {
+                        displayName = profile.nickname;
+                    }
+                }
+            } catch (err) {
+                console.warn('프로필 닉네임 로드 실패:', err);
+            }
+
+            if (profileEmail) profileEmail.textContent = displayName;
         }
     }
 
@@ -1319,9 +1336,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (success) {
                     showNotification('✅ 프로필이 성공적으로 저장되었습니다!');
 
-                    // UI 업데이트 (프로필 버튼 닉네임 교체 등) -> 필요 시 구현
-                    // const profileEmail = document.getElementById('profileEmail');
-                    // if (profileEmail) profileEmail.textContent = nickname; // 이메일 대신 닉네임 표시 원할 경우
+                    // UI 업데이트 (프로필 버튼 닉네임 교체)
+                    const profileEmail = document.getElementById('profileEmail');
+                    if (profileEmail) profileEmail.textContent = nickname;
 
                     myInfoModalOverlay.classList.remove('active');
                 } else {
