@@ -3116,4 +3116,51 @@ body {
     display: flex;
     align-items: center;
     gap: 0.4rem;
+}/* Action Buttons (Share & Save) */
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.75rem;
+    border-radius: 50px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    font-size: 1rem;
+    text-decoration: none;
+}
+
+.btn-share {
+    background: #ffffff;
+    border: 1px solid #e1e4e8;
+    color: var(--text-secondary);
+}
+
+.btn-share:hover {
+    background: #f8f9fa;
+    border-color: #d1d5db;
+    color: var(--text-primary);
+    transform: translateY(-2px);
+}
+
+.btn-save {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
+}
+
+.btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 102, 255, 0.4);
+}
+
+.btn-new-itinerary {
+    background: #f1f3f5;
+    color: var(--text-secondary);
+}
+
+.btn-new-itinerary:hover {
+    background: #e9ecef;
+    color: var(--text-primary);
 }

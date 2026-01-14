@@ -1409,5 +1409,17 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // [New] 외부 페이지(itinerary.html)에서의 로그인 요청 처리
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('action') === 'login') {
+        // URL 파라미터 정리
+        window.history.replaceState({}, document.title, window.location.pathname);
+        // 약간의 지연 후 모달 열기 (UX 자연스럽게)
+        setTimeout(() => {
+            openAuthModal('login');
+            showNotification('🔑 로그인이 필요한 서비스입니다.');
+        }, 500);
+    }
+
     console.log('📋 Profile modals initialized with DB connection');
 });
