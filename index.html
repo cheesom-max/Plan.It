@@ -41,6 +41,13 @@
                     <span class="profile-arrow">▼</span>
                 </button>
                 <div class="profile-dropdown" id="profileDropdown">
+                    <button class="dropdown-item" id="myInfoBtn">
+                        <span>👤</span> 내 정보
+                    </button>
+                    <button class="dropdown-item" id="myTripsBtn">
+                        <span>✈️</span> 내 여행
+                    </button>
+                    <div class="dropdown-divider"></div>
                     <button class="dropdown-item" id="logoutBtn">
                         <span>🚪</span> 로그아웃
                     </button>
@@ -436,6 +443,50 @@
     </div>
 
     <!-- 일정 결과는 itinerary.html 페이지에서 표시됩니다 -->
+
+    <!-- 내 정보 모달 -->
+    <div class="modal-overlay" id="myInfoModalOverlay">
+        <div class="modal-content">
+            <button class="modal-close" id="myInfoModalClose">✕</button>
+            <h2 class="modal-title">👤 내 정보</h2>
+            <div class="my-info-content">
+                <div class="info-avatar">
+                    <span class="avatar-icon">👤</span>
+                </div>
+                <div class="info-group">
+                    <label class="info-label">이메일</label>
+                    <p class="info-value" id="myInfoEmail">-</p>
+                </div>
+                <div class="info-group">
+                    <label class="info-label">닉네임</label>
+                    <input type="text" class="info-input" id="myInfoNickname" placeholder="닉네임을 입력하세요">
+                </div>
+                <div class="info-group">
+                    <label class="info-label">가입일</label>
+                    <p class="info-value" id="myInfoCreatedAt">-</p>
+                </div>
+                <button class="btn-save-info" id="saveInfoBtn">저장하기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 내 여행 모달 -->
+    <div class="modal-overlay" id="myTripsModalOverlay">
+        <div class="modal-content modal-large">
+            <button class="modal-close" id="myTripsModalClose">✕</button>
+            <h2 class="modal-title">✈️ 내 여행</h2>
+            <div class="my-trips-content">
+                <div class="trips-list" id="tripsList">
+                    <!-- 여행 목록이 동적으로 추가됨 -->
+                    <div class="trips-empty" id="tripsEmpty">
+                        <span class="empty-icon">🗺️</span>
+                        <p>아직 저장된 여행이 없습니다.</p>
+                        <p class="empty-hint">새로운 여행을 계획해보세요!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script src="supabase.js"></script>

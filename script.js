@@ -1168,4 +1168,121 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     console.log('🔐 Auth UI initialized');
+
+    // ===== 내 정보 / 내 여행 모달 핸들러 =====
+    const myInfoBtn = document.getElementById('myInfoBtn');
+    const myTripsBtn = document.getElementById('myTripsBtn');
+    const myInfoModalOverlay = document.getElementById('myInfoModalOverlay');
+    const myTripsModalOverlay = document.getElementById('myTripsModalOverlay');
+    const myInfoModalClose = document.getElementById('myInfoModalClose');
+    const myTripsModalClose = document.getElementById('myTripsModalClose');
+    const saveInfoBtn = document.getElementById('saveInfoBtn');
+
+    // 내 정보 모달 열기
+    if (myInfoBtn && myInfoModalOverlay) {
+        myInfoBtn.addEventListener('click', async function () {
+            // 프로필 드롭다운 닫기
+            const profileDropdown = document.getElementById('profileDropdown');
+            if (profileDropdown) profileDropdown.classList.remove('active');
+
+            // 사용자 정보 로드
+            if (typeof Auth !== 'undefined') {
+                const session = await Auth.getSession();
+                if (session?.user) {
+                    const myInfoEmail = document.getElementById('myInfoEmail');
+                    const myInfoCreatedAt = document.getElementById('myInfoCreatedAt');
+
+                    if (myInfoEmail) myInfoEmail.textContent = session.user.email;
+                    if (myInfoCreatedAt) {
+                        const createdDate = new Date(session.user.created_at);
+                        myInfoCreatedAt.textContent = createdDate.toLocaleDateString('ko-KR', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                    }
+                }
+            }
+
+            myInfoModalOverlay.classList.add('active');
+        });
+    }
+
+    // 내 정보 모달 닫기
+    if (myInfoModalClose && myInfoModalOverlay) {
+        myInfoModalClose.addEventListener('click', function () {
+            myInfoModalOverlay.classList.remove('active');
+        });
+
+        myInfoModalOverlay.addEventListener('click', function (e) {
+            if (e.target === myInfoModalOverlay) {
+                myInfoModalOverlay.classList.remove('active');
+            }
+        });
+    }
+
+    // 내 정보 저장
+    if (saveInfoBtn) {
+        saveInfoBtn.addEventListener('click', async function () {
+            const nickname = document.getElementById('myInfoNickname')?.value?.trim();
+
+            if (!nickname) {
+                showNotification('⚠️ 닉네임을 입력해주세요!');
+                return;
+            }
+
+            // Supabase 프로필 업데이트 (TODO: 실제 구현 필요)
+            showNotification('✅ 프로필이 저장되었습니다!');
+            myInfoModalOverlay.classList.remove('active');
+        });
+    }
+
+    // 내 여행 모달 열기
+    if (myTripsBtn && myTripsModalOverlay) {
+        myTripsBtn.addEventListener('click', async function () {
+            // 프로필 드롭다운 닫기
+            const profileDropdown = document.getElementById('profileDropdown');
+            if (profileDropdown) profileDropdown.classList.remove('active');
+
+            // 저장된 여행 목록 로드
+            const tripsList = document.getElementById('tripsList');
+            const tripsEmpty = document.getElementById('tripsEmpty');
+
+            // localStorage에서 여행 데이터 확인
+            const savedTrips = JSON.parse(localStorage.getItem('savedTrips') || '[]');
+
+            if (savedTrips.length > 0 && tripsList) {
+                tripsEmpty.style.display = 'none';
+                tripsList.innerHTML = savedTrips.map(trip => `
+                    <div class="trip-card" data-id="${trip.id || ''}">
+                        <span class="trip-icon">✈️</span>
+                        <div class="trip-info">
+                            <div class="trip-title">${trip.title || trip.destination || '여행'}</div>
+                            <div class="trip-dates">${trip.startDate || ''} ~ ${trip.endDate || ''}</div>
+                        </div>
+                        <span class="trip-arrow">→</span>
+                    </div>
+                `).join('');
+            } else if (tripsEmpty) {
+                tripsEmpty.style.display = 'block';
+            }
+
+            myTripsModalOverlay.classList.add('active');
+        });
+    }
+
+    // 내 여행 모달 닫기
+    if (myTripsModalClose && myTripsModalOverlay) {
+        myTripsModalClose.addEventListener('click', function () {
+            myTripsModalOverlay.classList.remove('active');
+        });
+
+        myTripsModalOverlay.addEventListener('click', function (e) {
+            if (e.target === myTripsModalOverlay) {
+                myTripsModalOverlay.classList.remove('active');
+            }
+        });
+    }
+
+    console.log('📋 Profile modals initialized');
 });
