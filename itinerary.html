@@ -530,7 +530,7 @@
                 }
             });
 
-            // 2. 저장하기 (DB 연동)
+            // 2. 저장하기 (DB 연동 - 전체 데이터 저장)
             saveBtn.addEventListener('click', async function () {
                 const originalText = saveBtn.innerHTML;
                 saveBtn.innerHTML = '<span>⏳</span><span>저장 중...</span>';
@@ -541,17 +541,15 @@
                     const session = await Auth.getSession();
                     if (!session || !session.user) {
                         if (confirm('🔒 여행을 저장하려면 로그인이 필요합니다.\n로그인 페이지로 이동하시겠습니까?')) {
-                            // 로그인 액션 파라미터를 붙여서 이동 (유기적 연결)
                             window.location.href = 'index.html?action=login';
                         }
                         return;
                     }
 
-                    // DB 저장 로직 (Supabase)
                     const supabase = getSupabaseClient();
                     const userId = session.user.id;
 
-                    // A. Trips 테이블 저장
+                    // 1. Trips 테이블 저장
                     const { data: tripData, error: tripError } = await supabase
                         .from('trips')
                         .insert({
@@ -568,21 +566,100 @@
                         .single();
 
                     if (tripError) throw tripError;
+                    const tripId = tripData.id;
 
-                    // B. Trip Days & Items 저장 (옵션: 복잡하면 생략 가능하지만, 여기선 메타데이터라도 저장 성공 시 완료 처리)
-                    // (상세 일정 저장은 구현 복잡도가 높으므로, 추후 고도화 과제로 남기고 일단 Trips 테이블 저장만으로 '저장됨' 처리)
-                    // 사용자에게는 '저장 완료' 피드백 제공
+                    // 2. 상세 일정 저장 (Days & Items)
+                    if (itinerary.days && itinerary.days.length > 0) {
+                        for (const day of itinerary.days) {
+                            // Trip_Days 저장
+                            const { data: dayData, error: dayError } = await supabase
+                                .from('trip_days')
+                                .insert({
+                                    trip_id: tripId,
+                                    day_number: day.day,
+                                    date: day.date, // YYYY-MM-DD
+                                    title: day.day_theme || `Day ${day.day}`,
+                                    summary: day.location || ''
+                                })
+                                .select()
+                                .single();
 
-                    alert('✅ 여행 일정이 내 계정에 안전하게 저장되었습니다!');
+                            if (dayError) throw dayError;
+                            const dayId = dayData.id;
+
+                            // Trip_Items 저장
+                            if (day.schedule && day.schedule.length > 0) {
+                                const itemsToInsert = day.schedule.map((item, index) => {
+                                    // 장소명 추출
+                                    const placeName = typeof item.place === 'object' ? item.place.name_ko : (item.place || item.activity || '장소');
+                                    // 주소 추출
+                                    const address = typeof item.place === 'object' ? item.place.address : null;
+                                    // 카테고리 매핑
+                                    const categoryEnum = mapCategoryToEnum(item.category || item.type);
+
+                                    return {
+                                        trip_day_id: dayId,
+                                        order_index: index + 1,
+                                        time: item.time, // "14:00" format compatible with TIME type
+                                        place_name: placeName,
+                                        category: categoryEnum,
+                                        description: item.description,
+                                        address: address,
+                                        duration_minutes: parseDuration(item.duration),
+                                        image_url: null // 추후 이미지가 있다면 추가
+                                    };
+                                });
+
+                                const { error: itemsError } = await supabase
+                                    .from('trip_items')
+                                    .insert(itemsToInsert);
+
+                                if (itemsError) throw itemsError;
+                            }
+                        }
+                    }
+
+                    alert('✅ 여행 일정이 내 계정에 완벽하게 저장되었습니다!');
 
                 } catch (error) {
-                    console.error('저장 오류:', error);
+                    console.error('저장 오류 상세:', error);
                     alert(`❌ 저장 실패: ${error.message}`);
                 } finally {
                     saveBtn.innerHTML = originalText;
                     saveBtn.disabled = false;
                 }
             });
+
+            // Helper: 카테고리 매핑 (DB ENUM 호환)
+            function mapCategoryToEnum(koreanCategory) {
+                const map = {
+                    '맛집탐방': 'food', 'food': 'food',
+                    '휴양': 'relax', 'relax': 'relax',
+                    '액티비티': 'activity', 'activity': 'activity',
+                    '문화예술': 'culture', 'culture': 'culture',
+                    '쇼핑': 'shopping', 'shopping': 'shopping',
+                    '자연탐험': 'nature', 'nature': 'nature',
+                    '포토스팟': 'photo', 'photo': 'photo',
+                    '나이트라이프': 'nightlife', 'nightlife': 'nightlife',
+                    '교통': 'transport', 'transport': 'transport',
+                    '숙소': 'accommodation', 'accommodation': 'accommodation'
+                };
+                return map[koreanCategory] || 'other';
+            }
+
+            // Helper: 시간 파싱 ("2시간" -> 120, "1시간 30분" -> 90)
+            function parseDuration(durationStr) {
+                if (!durationStr) return null;
+                let minutes = 0;
+
+                const hourMatch = durationStr.match(/(\d+)시간/);
+                if (hourMatch) minutes += parseInt(hourMatch[1]) * 60;
+
+                const minMatch = durationStr.match(/(\d+)분/);
+                if (minMatch) minutes += parseInt(minMatch[1]);
+
+                return minutes > 0 ? minutes : null;
+            }
 
             function getTypeLabel(type) {
                 const labels = {
