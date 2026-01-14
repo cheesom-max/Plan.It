@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내 정보 | Plan.It</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Supabase & Auth Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js" defer></script>
+    <script src="auth.js" defer></script>
+    <script src="profile.js" defer></script>
+
+    <style>
+        /* Profile Page Styles */
+        body {
+            background-color: #f3f4f6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .profile-header {
+            height: 64px;
+            background: white;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            margin-right: 12px;
+            color: #1f2937;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+        }
+
+        /* Profile Container */
+        .profile-container {
+            display: flex;
+            justify-content: center;
+            padding: 24px 16px;
+        }
+
+        .profile-card {
+            background: white;
+            width: 100%;
+            max-width: 600px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            box-sizing: border-box;
+        }
+
+        /* Sections */
+        .profile-section {
+            margin-bottom: 24px;
+        }
+
+        .section-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 12px;
+        }
+
+        /* Lift Divider */
+        .divider {
+            border: 0;
+            border-top: 1px solid #e5e7eb;
+            margin: 24px 0;
+        }
+
+        /* Profile Image */
+        .profile-image-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .profile-image {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: #2563eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: white;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+        }
+
+        /* Inputs */
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+            margin-bottom: 6px;
+        }
+
+        .input-read,
+        .input-edit {
+            width: 100%;
+            height: 44px;
+            padding: 0 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        .input-read {
+            background-color: #f3f4f6;
+            border: 1px solid transparent;
+            color: #4b5563;
+        }
+
+        .input-edit {
+            background-color: white;
+            border: 1px solid #d1d5db;
+            color: #1f2937;
+            transition: border-color 0.2s;
+        }
+
+        .input-edit:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .select-btn {
+            height: 40px;
+            padding: 0 16px;
+            border-radius: 8px;
+            border: none;
+            background-color: #f3f4f6;
+            color: #6b7280;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .select-btn:hover {
+            background-color: #e5e7eb;
+        }
+
+        .select-btn.active {
+            background-color: #2563eb;
+            color: white;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            background-color: #f9fafb;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        /* Save Button */
+        .save-btn {
+            width: 100%;
+            height: 48px;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .save-btn:hover {
+            background-color: #1d4ed8;
+        }
+
+        .save-btn:disabled {
+            background-color: #93c5fd;
+            cursor: not-allowed;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #10b981;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 24px;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            visibility: visible;
+            top: 32px;
+        }
+
+        @media (max-width: 768px) {
+            .profile-card {
+                width: 100%;
+                padding: 20px 16px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .button-group .select-btn {
+                width: 100%;
+            }
+
+            /* 예외: 여행 스타일은 버튼 텍스트 길이에 따라 흐르도록 유지하거나, 너무 길면 full width */
+            /* 디자인 가이드: "버튼들이 세로로 쌓임 (flex-direction: column)" */
+
+            /* 여행 통계 폰트 조정 */
+            .stat-value {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="profile-header">
+        <button class="back-btn" onclick="goBack()">←</button>
+        <h1 class="header-title">내 정보</h1>
+    </header>
+
+    <!-- Main Content -->
+    <main class="profile-container">
+        <div class="profile-card">
+            <!-- Profile Image -->
+            <div class="profile-image-wrapper">
+                <div class="profile-image">👤</div>
+            </div>
+
+            <!-- Basic Info -->
+            <div class="profile-section">
+                <div class="input-group">
+                    <label>이메일</label>
+                    <input type="text" id="email" class="input-read" readonly value="-">
+                </div>
+                <div class="input-group">
+                    <label>닉네임</label>
+                    <input type="text" id="nickname" class="input-edit" placeholder="닉네임을 입력하세요">
+                </div>
+                <div class="input-group">
+                    <label>가입일</label>
+                    <input type="text" id="joinDate" class="input-read" readonly value="-">
+                </div>
+            </div>
+
+            <hr class="divider">
+
+            <!-- Travel Style -->
+            <div class="profile-section">
+                <label class="section-label">여행 스타일</label>
+                <div class="button-group" id="styleGroup">
+                    <button class="select-btn" data-value="nature">🌿 자연과 힐링</button>
+                    <button class="select-btn" data-value="activity">🎢 체험·액티비티</button>
+                    <button class="select-btn" data-value="culture">🏛️ 관광·문화</button>
+                    <button class="select-btn" data-value="food">🍜 맛집 투어</button>
+                </div>
+            </div>
+
+            <!-- Companion Type -->
+            <div class="profile-section">
+                <label class="section-label">주로 누구와 여행하시나요?</label>
+                <div class="button-group" id="companionGroup">
+                    <button class="select-btn" data-value="alone">혼자</button>
+                    <button class="select-btn" data-value="family">가족</button>
+                    <button class="select-btn" data-value="couple">커플</button>
+                    <button class="select-btn" data-value="friends">친구</button>
+                </div>
+            </div>
+
+            <!-- Budget Level -->
+            <div class="profile-section">
+                <label class="section-label">여행 예산</label>
+                <div class="button-group" id="budgetGroup">
+                    <button class="select-btn" data-value="low">💰 가성비</button>
+                    <button class="select-btn" data-value="medium">💵 중간</button>
+                    <button class="select-btn" data-value="high">💎 럭셔리</button>
+                </div>
+            </div>
+
+            <hr class="divider">
+
+            <!-- Stats -->
+            <label class="section-label" style="text-align: center; margin-bottom: 16px;">내 여행 기록</label>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-label">계획한 여행</span>
+                    <span class="stat-value" id="statPlanned">0회</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">저장한 일정</span>
+                    <span class="stat-value" id="statSaved">0개</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">방문 예정</span>
+                    <span class="stat-value" id="statUpcoming">0곳</span>
+                </div>
+            </div>
+
+            <!-- Action -->
+            <button class="save-btn" id="saveBtn">저장하기</button>
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">프로필이 저장되었습니다</div>
+
+    <script>
+        function goBack() {
+            // history가 있으면 뒤로, 없으면 index.html로
+            if (document.referrer && document.referrer.indexOf(window.location.host) !== -1) {
+                history.back();
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+
+</html>
