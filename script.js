@@ -1,6 +1,300 @@
 // AI Travel Planner - Main JavaScript
 
+// ===== 전역 도시 데이터 저장소 =====
+// 사용자가 요청한 인기 여행지 데이터 (한국어/영어 지원)
+const destinations = [
+    { ko: "파리", en: "Paris", country: "프랑스", score: 10 },
+    { ko: "런던", en: "London", country: "영국", score: 10 },
+    { ko: "로마", en: "Rome", country: "이탈리아", score: 10 },
+    { ko: "도쿄", en: "Tokyo", country: "일본", score: 10 },
+    { ko: "오사카", en: "Osaka", country: "일본", score: 10 },
+    { ko: "후쿠오카", en: "Fukuoka", country: "일본", score: 9 },
+    { ko: "삿포로", en: "Sapporo", country: "일본", score: 8 },
+    { ko: "오키나와", en: "Okinawa", country: "일본", score: 8 },
+    { ko: "교토", en: "Kyoto", country: "일본", score: 8 },
+    { ko: "방콕", en: "Bangkok", country: "태국", score: 10 },
+    { ko: "다낭", en: "Da Nang", country: "베트남", score: 10 },
+    { ko: "나트랑", en: "Nha Trang", country: "베트남", score: 8 },
+    { ko: "푸꾸옥", en: "Phu Quoc", country: "베트남", score: 7 },
+    { ko: "하노이", en: "Hanoi", country: "베트남", score: 7 },
+    { ko: "호치민", en: "Ho Chi Minh City", country: "베트남", score: 7 },
+    { ko: "타이베이", en: "Taipei", country: "대만", score: 9 },
+    { ko: "싱가포르", en: "Singapore", country: "싱가포르", score: 9 },
+    { ko: "발리", en: "Bali", country: "인도네시아", score: 9 },
+    { ko: "세부", en: "Cebu", country: "필리핀", score: 8 },
+    { ko: "보라카이", en: "Boracay", country: "필리핀", score: 8 },
+    { ko: "홍콩", en: "Hong Kong", country: "중국", score: 9 },
+    { ko: "마카오", en: "Macau", country: "중국", score: 7 },
+    { ko: "상하이", en: "Shanghai", country: "중국", score: 7 },
+    { ko: "베이징", en: "Beijing", country: "중국", score: 7 },
+    { ko: "뉴욕", en: "New York", country: "미국", score: 10 },
+    { ko: "호놀룰루(하와이)", en: "Honolulu", country: "미국", score: 10 },
+    { ko: "LA", en: "Los Angeles", country: "미국", score: 9 },
+    { ko: "샌프란시스코", en: "San Francisco", country: "미국", score: 8 },
+    { ko: "라스베이거스", en: "Las Vegas", country: "미국", score: 8 },
+    { ko: "괌", en: "Guam", country: "미국", score: 9 },
+    { ko: "사이판", en: "Saipan", country: "미국", score: 8 },
+    { ko: "바르셀로나", en: "Barcelona", country: "스페인", score: 9 },
+    { ko: "마드리드", en: "Madrid", country: "스페인", score: 8 },
+    { ko: "세비야", en: "Seville", country: "스페인", score: 7 },
+    { ko: "프라하", en: "Prague", country: "체코", score: 8 },
+    { ko: "인터라켄", en: "Interlaken", country: "스위스", score: 9 },
+    { ko: "취리히", en: "Zurich", country: "스위스", score: 7 },
+    { ko: "베네치아", en: "Venice", country: "이탈리아", score: 8 },
+    { ko: "피렌체", en: "Florence", country: "이탈리아", score: 8 },
+    { ko: "밀라노", en: "Milan", country: "이탈리아", score: 7 },
+    { ko: "암스테르담", en: "Amsterdam", country: "네덜란드", score: 8 },
+    { ko: "빈", en: "Vienna", country: "오스트리아", score: 8 },
+    { ko: "부다페스트", en: "Budapest", country: "헝가리", score: 8 },
+    { ko: "베를린", en: "Berlin", country: "독일", score: 7 },
+    { ko: "뮌헨", en: "Munich", country: "독일", score: 7 },
+    { ko: "리스본", en: "Lisbon", country: "포르투갈", score: 7 },
+    { ko: "이스탄불", en: "Istanbul", country: "튀르키예", score: 8 },
+    { ko: "두바이", en: "Dubai", country: "아랍에미리트", score: 8 },
+    { ko: "코타키나발루", en: "Kota Kinabalu", country: "말레이시아", score: 7 },
+    { ko: "쿠알라룸푸르", en: "Kuala Lumpur", country: "말레이시아", score: 7 },
+    { ko: "시드니", en: "Sydney", country: "호주", score: 8 },
+    { ko: "멜버른", en: "Melbourne", country: "호주", score: 7 },
+    { ko: "몰디브", en: "Maldives", country: "몰디브", score: 8 },
+    { ko: "칸쿤", en: "Cancun", country: "멕시코", score: 7 },
+    { ko: "제주", en: "Jeju", country: "대한민국", score: 10 },
+    { ko: "서울", en: "Seoul", country: "대한민국", score: 10 },
+    { ko: "부산", en: "Busan", country: "대한민국", score: 9 },
+    { ko: "강릉", en: "Gangneung", country: "대한민국", score: 7 },
+    { ko: "경주", en: "Gyeongju", country: "대한민국", score: 7 }
+];
+
+// 로컬 도시 검색 함수 (빠른 필터링 - 한글/영어 지원)
+function searchCitiesLocal(query) {
+    if (!query || query.length < 1) return []; // 한글은 1글자부터 검색 허용
+
+    const searchTerm = query.toLowerCase();
+
+    // 입력값이 한글인지 확인
+    const isKorean = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(searchTerm);
+
+    let results = destinations.filter(city => {
+        if (isKorean) {
+            // 한글 검색: 도시명(ko) 또는 국가(country)에 포함
+            return city.ko.includes(query) || city.country.includes(query);
+        } else {
+            // 영어 검색: 도시명(en)에 포함 (소문자 비교)
+            return city.en.toLowerCase().includes(searchTerm);
+        }
+    });
+
+    // 점수(score) 내림차순 정렬 (인기 도시 우선)
+    results.sort((a, b) => b.score - a.score);
+
+    // 최대 10개 결과 반환, 데이터 형식 변환 to match previous structure
+    return results.slice(0, 10).map(city => ({
+        name: isKorean ? city.ko : city.en,
+        country: isKorean ? city.country : city.en, // Note: using en name as country fallback if needed or just display context
+        // 원래 코드 구조에 맞추기 위해 변환
+        original: city,
+        displayName: isKorean ? `${city.ko}, ${city.country}` : `${city.en}, ${city.country}`
+    }));
+}
+
 document.addEventListener('DOMContentLoaded', function () {
+
+    // ===== Hero Search Box - Airbnb Style UX =====
+    const heroSearchForm = document.getElementById('heroSearchForm');
+    const heroDestination = document.getElementById('heroDestination');
+    const heroStartDate = document.getElementById('heroStartDate');
+    const heroEndDate = document.getElementById('heroEndDate');
+    const heroSearchBtn = document.getElementById('heroSearchBtn');
+    const heroSuggestions = document.querySelector('.hero-suggestions');
+
+    // Hero 날짜 필드 초기화 - 오늘 이후만 선택 가능
+    if (heroStartDate && heroEndDate) {
+        const today = new Date().toISOString().split('T')[0];
+        heroStartDate.min = today;
+        heroEndDate.min = today;
+
+        // 체크인 변경 시 체크아웃 최소값 연동
+        heroStartDate.addEventListener('change', function () {
+            heroEndDate.min = this.value;
+            if (heroEndDate.value && heroEndDate.value < this.value) {
+                heroEndDate.value = this.value;
+            }
+            // 날짜 선택 후 다음 필드로 자동 이동
+            if (this.value) {
+                heroEndDate.focus();
+            }
+        });
+
+        // 체크아웃 선택 완료 시 검색 버튼 하이라이트
+        heroEndDate.addEventListener('change', function () {
+            if (this.value && heroStartDate.value && heroDestination.value) {
+                heroSearchBtn.classList.add('ready');
+            }
+        });
+    }
+
+    // Hero 자동완성 - 로컬 도시 데이터 사용 (API 비용 무료!)
+    if (heroDestination && heroSuggestions) {
+        // Debounce 함수
+        function debounceHero(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Hero 도시 검색 (로컬 데이터 사용)
+        const searchHeroCities = debounceHero(function (query) {
+            if (!query || query.length < 2) {
+                heroSuggestions.classList.remove('active');
+                return;
+            }
+
+            // 로컬 도시 데이터에서 검색
+            const cities = searchCitiesLocal(query);
+
+            if (cities.length > 0) {
+                heroSuggestions.innerHTML = cities.map(city => `
+                    <div class="suggestion-item" data-name="${city.name}" data-country="${city.country}">
+                        <span class="suggestion-icon">📍</span>
+                        <span class="suggestion-text">
+                            <span class="suggestion-name">${city.name}</span>
+                            <span class="suggestion-country">${city.country}</span>
+                        </span>
+                    </div>
+                `).join('');
+                heroSuggestions.classList.add('active');
+            } else {
+                // 검색 결과 없을 때 직접 입력 허용
+                heroSuggestions.innerHTML = `
+                    <div class="suggestion-item" data-name="${query}" data-country="">
+                        <span class="suggestion-icon">✏️</span>
+                        <span class="suggestion-text">
+                            <span class="suggestion-name">"${query}" 직접 입력</span>
+                        </span>
+                    </div>
+                `;
+                heroSuggestions.classList.add('active');
+            }
+        }, 150); // 로컬 검색은 더 빠르므로 debounce 시간 단축
+
+        // 입력 이벤트
+        heroDestination.addEventListener('input', function () {
+            searchHeroCities(this.value.trim());
+        });
+
+        // 포커스 시 이전 검색 결과 보여주기
+        heroDestination.addEventListener('focus', function () {
+            if (this.value.trim().length >= 2) {
+                searchHeroCities(this.value.trim());
+            }
+        });
+
+        // 자동완성 항목 클릭 처리
+        heroSuggestions.addEventListener('click', function (e) {
+            const item = e.target.closest('.suggestion-item');
+            if (item) {
+                const name = item.dataset.name;
+                const country = item.dataset.country;
+                heroDestination.value = country ? `${name}, ${country}` : name;
+                heroSuggestions.classList.remove('active');
+                // 목적지 선택 후 체크인 필드로 자동 이동
+                heroStartDate.focus();
+            }
+        });
+
+        // 외부 클릭 시 닫기
+        document.addEventListener('click', function (e) {
+            if (!heroDestination.contains(e.target) && !heroSuggestions.contains(e.target)) {
+                heroSuggestions.classList.remove('active');
+            }
+        });
+    }
+
+    // Hero 폼 Submit 방지 및 엔터키 처리
+    if (heroSearchForm) {
+        heroSearchForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            // 검색 버튼 클릭 트리거
+            if (heroSearchBtn) heroSearchBtn.click();
+        });
+    }
+
+    // 엔터키로 다음 필드 이동 (에어비앤비 스타일)
+    if (heroDestination) {
+        heroDestination.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                heroSuggestions?.classList.remove('active');
+                heroStartDate?.focus();
+            }
+        });
+    }
+
+    if (heroStartDate) {
+        heroStartDate.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                heroEndDate?.focus();
+            }
+        });
+    }
+
+    if (heroEndDate) {
+        heroEndDate.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                heroSearchBtn?.click();
+            }
+        });
+    }
+
+    // Hero 검색 버튼 클릭 - 메인 폼으로 데이터 동기화
+    if (heroSearchBtn) {
+        heroSearchBtn.addEventListener('click', function () {
+            const destination = heroDestination?.value?.trim();
+            const startDate = heroStartDate?.value;
+            const endDate = heroEndDate?.value;
+
+            // 유효성 검사
+            if (!destination) {
+                showNotification('📍 여행지를 입력해주세요!');
+                heroDestination?.focus();
+                return;
+            }
+
+            // 메인 폼 요소 찾기
+            const mainDestInput = document.querySelector('#destinationsContainer .destination-input');
+            const mainStartDate = document.getElementById('startDate');
+            const mainEndDate = document.getElementById('endDate');
+
+            // 데이터 동기화
+            if (mainDestInput) {
+                mainDestInput.value = destination;
+                mainDestInput.dataset.name = destination.split(',')[0].trim();
+                mainDestInput.dataset.country = destination.split(',')[1]?.trim() || '';
+            }
+            if (mainStartDate && startDate) mainStartDate.value = startDate;
+            if (mainEndDate && endDate) mainEndDate.value = endDate;
+
+            // 날짜 입력 안내
+            if (!startDate || !endDate) {
+                showNotification('📅 날짜를 선택하시면 더 정확한 일정을 받을 수 있어요!');
+            } else {
+                showNotification('✅ 상세 옵션을 선택한 후 일정을 생성하세요!');
+            }
+
+            // 메인 폼 섹션으로 스크롤
+            const formSection = document.querySelector('.travel-form-section');
+            if (formSection) {
+                formSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    }
 
     // ===== Navigation Scroll Effect =====
     const navbar = document.querySelector('.navbar');
@@ -174,43 +468,40 @@ document.addEventListener('DOMContentLoaded', function () {
         };
     }
 
-    // 도시 검색 API 호출 (debounce 적용)
-    const searchCitiesDebounced = debounce(async function (query, suggestionsEl) {
+    // 메인 폼 도시 검색 (로컬 데이터 사용 - API 비용 무료!)
+    const searchCitiesDebounced = debounce(function (query, suggestionsEl) {
         if (!query || query.length < 2) {
             suggestionsEl.classList.remove('active');
             return;
         }
 
-        try {
-            const cities = await TravelAPI.searchCities(query);
+        // 로컬 도시 데이터에서 검색
+        const cities = searchCitiesLocal(query);
 
-            if (cities.length > 0) {
-                suggestionsEl.innerHTML = cities.map(city => `
-                    <div class="suggestion-item" data-name="${city.name}" data-country="${city.country}">
-                        <span class="suggestion-icon">📍</span>
-                        <span class="suggestion-text">
-                            <span class="suggestion-name">${city.name}</span>
-                            <span class="suggestion-country">${city.country}</span>
-                        </span>
-                    </div>
-                `).join('');
-                suggestionsEl.classList.add('active');
-            } else {
-                // 검색 결과 없을 때 직접 입력 허용
-                suggestionsEl.innerHTML = `
-                    <div class="suggestion-item" data-name="${query}" data-country="">
-                        <span class="suggestion-icon">✏️</span>
-                        <span class="suggestion-text">
-                            <span class="suggestion-name">"${query}" 직접 입력</span>
-                        </span>
-                    </div>
-                `;
-                suggestionsEl.classList.add('active');
-            }
-        } catch (error) {
-            console.error('City search error:', error);
+        if (cities.length > 0) {
+            suggestionsEl.innerHTML = cities.map(city => `
+                <div class="suggestion-item" data-name="${city.name}" data-country="${city.country}">
+                    <span class="suggestion-icon">📍</span>
+                    <span class="suggestion-text">
+                        <span class="suggestion-name">${city.name}</span>
+                        <span class="suggestion-country">${city.country}</span>
+                    </span>
+                </div>
+            `).join('');
+            suggestionsEl.classList.add('active');
+        } else {
+            // 검색 결과 없을 때 직접 입력 허용
+            suggestionsEl.innerHTML = `
+                <div class="suggestion-item" data-name="${query}" data-country="">
+                    <span class="suggestion-icon">✏️</span>
+                    <span class="suggestion-text">
+                        <span class="suggestion-name">"${query}" 직접 입력</span>
+                    </span>
+                </div>
+            `;
+            suggestionsEl.classList.add('active');
         }
-    }, 300);
+    }, 150); // 로컬 검색은 빠르므로 debounce 시간 단축
 
     // 여행지 입력 필드에 이벤트 리스너 추가
     function initDestinationInput(inputEl, index) {
@@ -502,6 +793,16 @@ document.addEventListener('DOMContentLoaded', function () {
         travelPlanForm.addEventListener('submit', async function (e) {
             e.preventDefault();
 
+            // ===== 로그인 체크 =====
+            if (typeof Auth !== 'undefined') {
+                const session = await Auth.getSession();
+                if (!session?.user) {
+                    showNotification('⚠️ 일정 생성은 로그인 후 이용 가능합니다!');
+                    openAuthModal('login');
+                    return;
+                }
+            }
+
             // 폼 데이터 수집
             const destinations = collectDestinations();
             const startDate = startDateInput?.value;
@@ -545,8 +846,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
 
                 hideLoading();
-                displayItinerary(itinerary);
-                showNotification('✅ 일정이 성공적으로 생성되었습니다!');
+
+                // 일정 데이터를 localStorage에 저장
+                localStorage.setItem('travelItinerary', JSON.stringify(itinerary));
+                localStorage.setItem('tripInfo', JSON.stringify({
+                    destinations,
+                    startDate,
+                    endDate,
+                    companion,
+                    styles
+                }));
+
+                // 결과 페이지로 이동
+                window.location.href = 'itinerary.html';
 
             } catch (error) {
                 hideLoading();

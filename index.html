@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="AI 기반 맞춤형 여행 일정 생성기 - 당신만을 위한 최적의 여행 경로를 AI가 설계합니다">
-    <title>AI 트래블 플래너 - 맞춤형 여행 일정 생성기</title>
+    <title>Plan.It - AI 맞춤형 여행 일정 생성기</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap"
@@ -21,7 +21,7 @@
         <div class="nav-container">
             <div class="logo">
                 <span class="logo-icon">✈️</span>
-                <span class="logo-text">AI Travel Planner</span>
+                <span class="logo-text">Plan.It</span>
             </div>
             <!-- 로그인 전: 로그인/회원가입 버튼 -->
             <div class="auth-buttons" id="authButtons">
@@ -49,26 +49,48 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section class="hero">
+    <!-- Hero Section - Airbnb Style -->
+    <section class="hero hero-airbnb">
         <div class="hero-overlay"></div>
-        <div class="hero-content">
-            <h1 class="hero-title">
-                <span class="title-highlight">당신만을 위한</span>
-                <span class="title-main">최적의 여행 경로를</span>
-                <span class="title-ai">AI가 설계합니다</span>
+        <div class="hero-center-content">
+            <!-- 메인 헤드라인 -->
+            <h1 class="hero-headline">
+                실패없는 여행계획<br>
+                <span class="headline-accent">5분이면 끝납니다.</span>
             </h1>
-            <p class="hero-subtitle">
-                인공지능이 분석한 완벽한 맞춤 여행 일정으로<br>
-                잊지 못할 추억을 만들어보세요
+            <p class="hero-tagline">
+                항공권부터 맛집, 동선까지.<br>
+                <strong>Plan.It AI</strong>가 당신의 취향대로 완벽한 일정을 짜줍니다.
             </p>
-            <button class="cta-btn" id="startBtn">
-                <span>지금 시작하기</span>
-                <span class="btn-arrow">→</span>
-            </button>
+
+            <!-- 검색 박스 (에어비앤비 스타일) -->
+            <div class="hero-search-box">
+                <form class="hero-search-form" id="heroSearchForm">
+                    <div class="search-field search-field-destination">
+                        <label>어디로</label>
+                        <input type="text" id="heroDestination" class="hero-search-input destination-input"
+                            placeholder="여행지 검색" autocomplete="off">
+                        <div class="search-suggestions hero-suggestions"></div>
+                    </div>
+                    <div class="search-divider"></div>
+                    <div class="search-field search-field-date">
+                        <label>체크인</label>
+                        <input type="date" id="heroStartDate" class="hero-search-input">
+                    </div>
+                    <div class="search-divider"></div>
+                    <div class="search-field search-field-date">
+                        <label>체크아웃</label>
+                        <input type="date" id="heroEndDate" class="hero-search-input">
+                    </div>
+                    <button type="button" class="hero-search-btn" id="heroSearchBtn">
+                        <span class="search-btn-icon">🔍</span>
+                        <span class="search-btn-text">검색</span>
+                    </button>
+                </form>
+            </div>
         </div>
         <div class="hero-scroll-indicator">
-            <span class="scroll-text">아래로 스크롤</span>
+            <span class="scroll-text">상세 옵션 선택</span>
             <div class="scroll-arrow">↓</div>
         </div>
     </section>
@@ -179,68 +201,84 @@
                     </div>
                 </div>
 
-                <!-- Travel Style -->
+                <!-- Travel Style - Instagram Style Cards -->
                 <div class="form-group">
                     <label class="form-label">
                         <span class="label-icon">🎨</span>
                         여행 스타일 <span class="label-hint">(복수 선택 가능)</span>
                     </label>
-                    <div class="style-tags">
-                        <label class="style-tag">
+                    <div class="style-cards-grid">
+                        <label class="style-card" data-style="food">
                             <input type="checkbox" name="style" value="food">
-                            <span class="tag-content">
-                                <span class="tag-icon">🍽️</span>
-                                맛집 탐방
-                            </span>
+                            <div class="card-bg"></div>
+                            <div class="card-content">
+                                <span class="card-icon">🍽️</span>
+                                <span class="card-text">맛집 탐방</span>
+                            </div>
+                            <div class="card-check">✓</div>
                         </label>
-                        <label class="style-tag">
+                        <label class="style-card" data-style="relax">
                             <input type="checkbox" name="style" value="relax">
-                            <span class="tag-content">
-                                <span class="tag-icon">🏖️</span>
-                                휴양
-                            </span>
+                            <div class="card-bg"></div>
+                            <div class="card-content">
+                                <span class="card-icon">🏖️</span>
+                                <span class="card-text">휴양</span>
+                            </div>
+                            <div class="card-check">✓</div>
                         </label>
-                        <label class="style-tag">
+                        <label class="style-card" data-style="activity">
                             <input type="checkbox" name="style" value="activity">
-                            <span class="tag-content">
-                                <span class="tag-icon">🏄</span>
-                                액티비티
-                            </span>
+                            <div class="card-bg"></div>
+                            <div class="card-content">
+                                <span class="card-icon">🏄</span>
+                                <span class="card-text">액티비티</span>
+                            </div>
+                            <div class="card-check">✓</div>
                         </label>
-                        <label class="style-tag">
+                        <label class="style-card" data-style="culture">
                             <input type="checkbox" name="style" value="culture">
-                            <span class="tag-content">
-                                <span class="tag-icon">🎭</span>
-                                문화예술
-                            </span>
+                            <div class="card-bg"></div>
+                            <div class="card-content">
+                                <span class="card-icon">🎭</span>
+                                <span class="card-text">문화예술</span>
+                            </div>
+                            <div class="card-check">✓</div>
                         </label>
-                        <label class="style-tag">
+                        <label class="style-card" data-style="shopping">
                             <input type="checkbox" name="style" value="shopping">
-                            <span class="tag-content">
-                                <span class="tag-icon">🛍️</span>
-                                쇼핑
-                            </span>
+                            <div class="card-bg"></div>
+                            <div class="card-content">
+                                <span class="card-icon">🛍️</span>
+                                <span class="card-text">쇼핑</span>
+                            </div>
+                            <div class="card-check">✓</div>
                         </label>
-                        <label class="style-tag">
+                        <label class="style-card" data-style="nature">
                             <input type="checkbox" name="style" value="nature">
-                            <span class="tag-content">
-                                <span class="tag-icon">🌿</span>
-                                자연 탐험
-                            </span>
+                            <div class="card-bg"></div>
+                            <div class="card-content">
+                                <span class="card-icon">🌿</span>
+                                <span class="card-text">자연 탐험</span>
+                            </div>
+                            <div class="card-check">✓</div>
                         </label>
-                        <label class="style-tag">
+                        <label class="style-card" data-style="photo">
                             <input type="checkbox" name="style" value="photo">
-                            <span class="tag-content">
-                                <span class="tag-icon">📸</span>
-                                포토 스팟
-                            </span>
+                            <div class="card-bg"></div>
+                            <div class="card-content">
+                                <span class="card-icon">📸</span>
+                                <span class="card-text">포토 스팟</span>
+                            </div>
+                            <div class="card-check">✓</div>
                         </label>
-                        <label class="style-tag">
+                        <label class="style-card" data-style="nightlife">
                             <input type="checkbox" name="style" value="nightlife">
-                            <span class="tag-content">
-                                <span class="tag-icon">🌙</span>
-                                나이트라이프
-                            </span>
+                            <div class="card-bg"></div>
+                            <div class="card-content">
+                                <span class="card-icon">🌙</span>
+                                <span class="card-text">나이트라이프</span>
+                            </div>
+                            <div class="card-check">✓</div>
                         </label>
                     </div>
                 </div>
@@ -321,7 +359,7 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-container">
-            <p>&copy; 2026 AI Travel Planner. All rights reserved.</p>
+            <p>&copy; 2026 Plan.It. All rights reserved.</p>
         </div>
     </footer>
 
@@ -397,25 +435,7 @@
         </div>
     </div>
 
-    <!-- 일정 결과 표시 섹션 -->
-    <section class="itinerary-result-section" id="itinerarySection" style="display: none;">
-        <div class="itinerary-container">
-            <div class="itinerary-header">
-                <h2 class="itinerary-title" id="itineraryTitle">🗺️ 여행 일정</h2>
-                <p class="itinerary-summary" id="itinerarySummary"></p>
-            </div>
-            <div class="itinerary-days" id="itineraryDays">
-                <!-- 일별 일정이 동적으로 표시됨 -->
-            </div>
-            <div class="itinerary-tips" id="itineraryTips">
-                <!-- 여행 팁이 표시됨 -->
-            </div>
-            <div class="itinerary-actions">
-                <button class="btn-save-itinerary" id="saveItineraryBtn">💾 일정 저장하기</button>
-                <button class="btn-new-itinerary" id="newItineraryBtn">🔄 새 일정 만들기</button>
-            </div>
-        </div>
-    </section>
+    <!-- 일정 결과는 itinerary.html 페이지에서 표시됩니다 -->
 
     <!-- Scripts -->
     <script src="supabase.js"></script>
