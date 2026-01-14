@@ -1190,9 +1190,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 const session = await Auth.getSession();
                 if (session?.user) {
                     const myInfoEmail = document.getElementById('myInfoEmail');
+                    const myInfoNickname = document.getElementById('myInfoNickname');
                     const myInfoCreatedAt = document.getElementById('myInfoCreatedAt');
 
                     if (myInfoEmail) myInfoEmail.textContent = session.user.email;
+
+                    // DB에서 최신 프로필 정보 가져오기
+                    const profile = await Auth.getProfile();
+                    if (myInfoNickname) {
+                        myInfoNickname.value = profile?.nickname || '';
+                    }
+
                     if (myInfoCreatedAt) {
                         const createdDate = new Date(session.user.created_at);
                         myInfoCreatedAt.textContent = createdDate.toLocaleDateString('ko-KR', {
@@ -1221,50 +1229,104 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // 내 정보 저장
+    // 내 정보 저장 (DB 연동)
     if (saveInfoBtn) {
         saveInfoBtn.addEventListener('click', async function () {
-            const nickname = document.getElementById('myInfoNickname')?.value?.trim();
+            const nicknameInput = document.getElementById('myInfoNickname');
+            const nickname = nicknameInput?.value?.trim();
 
             if (!nickname) {
                 showNotification('⚠️ 닉네임을 입력해주세요!');
+                nicknameInput?.focus();
                 return;
             }
 
-            // Supabase 프로필 업데이트 (TODO: 실제 구현 필요)
-            showNotification('✅ 프로필이 저장되었습니다!');
-            myInfoModalOverlay.classList.remove('active');
+            // 로딩 상태 표시
+            const originalBtnText = saveInfoBtn.textContent;
+            saveInfoBtn.textContent = '저장 중...';
+            saveInfoBtn.disabled = true;
+
+            try {
+                if (typeof Auth === 'undefined') {
+                    throw new Error('인증 모듈을 찾을 수 없습니다.');
+                }
+
+                const { success, error } = await Auth.updateProfile({ nickname: nickname });
+
+                if (success) {
+                    showNotification('✅ 프로필이 성공적으로 저장되었습니다!');
+
+                    // UI 업데이트 (프로필 버튼 닉네임 교체 등) -> 필요 시 구현
+                    // const profileEmail = document.getElementById('profileEmail');
+                    // if (profileEmail) profileEmail.textContent = nickname; // 이메일 대신 닉네임 표시 원할 경우
+
+                    myInfoModalOverlay.classList.remove('active');
+                } else {
+                    throw new Error(error || '저장에 실패했습니다.');
+                }
+            } catch (err) {
+                console.error('프로필 저장 오류:', err);
+                showNotification(`❌ 오류: ${err.message}`);
+            } finally {
+                // 버튼 상태 복구
+                saveInfoBtn.textContent = originalBtnText;
+                saveInfoBtn.disabled = false;
+            }
         });
     }
 
-    // 내 여행 모달 열기
+    // 내 여행 모달 열기 및 목록 로드
     if (myTripsBtn && myTripsModalOverlay) {
-        myTripsBtn.addEventListener('click', async function () {
+        myTripsBtn.addEventListener('click', function () {
             // 프로필 드롭다운 닫기
             const profileDropdown = document.getElementById('profileDropdown');
             if (profileDropdown) profileDropdown.classList.remove('active');
 
-            // 저장된 여행 목록 로드
             const tripsList = document.getElementById('tripsList');
             const tripsEmpty = document.getElementById('tripsEmpty');
 
-            // localStorage에서 여행 데이터 확인
+            // localStorage에서 여행 데이터 확인 (실제 운영 시에는 DB 연동 권장)
             const savedTrips = JSON.parse(localStorage.getItem('savedTrips') || '[]');
 
             if (savedTrips.length > 0 && tripsList) {
                 tripsEmpty.style.display = 'none';
-                tripsList.innerHTML = savedTrips.map(trip => `
-                    <div class="trip-card" data-id="${trip.id || ''}">
+                tripsList.innerHTML = savedTrips.map((trip, index) => `
+                    <div class="trip-card" data-index="${index}">
                         <span class="trip-icon">✈️</span>
                         <div class="trip-info">
-                            <div class="trip-title">${trip.title || trip.destination || '여행'}</div>
+                            <div class="trip-title">${trip.title || trip.destination || '나의 여행'}</div>
                             <div class="trip-dates">${trip.startDate || ''} ~ ${trip.endDate || ''}</div>
                         </div>
                         <span class="trip-arrow">→</span>
                     </div>
                 `).join('');
+
+                // 여행 아이템 클릭 이벤트 (동적 바인딩 확인을 위해 직접 추가)
+                const tripCards = tripsList.querySelectorAll('.trip-card');
+                tripCards.forEach(card => {
+                    card.addEventListener('click', function () {
+                        const index = this.dataset.index;
+                        const tripData = savedTrips[index];
+
+                        if (tripData) {
+                            // 모달 닫기
+                            myTripsModalOverlay.classList.remove('active');
+
+                            // 일정 표시
+                            // displayItinerary 함수가 tripData 구조를 처리할 수 있는지 확인 (itinerary 객체가 tripData에 직접 있는지, 아니면 tripData 자체가 itinerary인지)
+                            // 저장 구조: { id, title, startDate, endDate, summary, days, tips ... } 
+                            // displayItinerary는 위 구조를 그대로 받음
+                            displayItinerary(tripData);
+
+                            showNotification(`📂 '${tripData.title}' 일정을 불러왔습니다!`);
+                        }
+                    });
+                });
+
             } else if (tripsEmpty) {
                 tripsEmpty.style.display = 'block';
+                if (tripsList) tripsList.innerHTML = ''; // 기존 목록 초기화
+                tripsList.appendChild(tripsEmpty);
             }
 
             myTripsModalOverlay.classList.add('active');
@@ -1284,5 +1346,5 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    console.log('📋 Profile modals initialized');
+    console.log('📋 Profile modals initialized with DB connection');
 });
