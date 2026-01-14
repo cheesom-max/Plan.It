@@ -17,12 +17,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ===== Button Click Handlers =====
     const loginBtn = document.getElementById('loginBtn');
+    const signupBtnNav = document.getElementById('signupBtn');
     const startBtn = document.getElementById('startBtn');
 
     if (loginBtn) {
         loginBtn.addEventListener('click', function () {
-            // 로그인 버튼 클릭 이벤트
-            showNotification('로그인 기능이 곧 추가됩니다!');
+            // 로그인 모달 열기 (로그인 탭)
+            openAuthModal('login');
+        });
+    }
+
+    if (signupBtnNav) {
+        signupBtnNav.addEventListener('click', function () {
+            // 로그인 모달 열기 (회원가입 탭)
+            openAuthModal('signup');
         });
     }
 
@@ -89,10 +97,10 @@ document.addEventListener('DOMContentLoaded', function () {
             alignItems: 'center',
             gap: '0.75rem',
             padding: '1rem 2rem',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: 'linear-gradient(135deg, #0066FF 0%, #003D99 100%)',
             color: '#fff',
             borderRadius: '50px',
-            boxShadow: '0 10px 40px rgba(102, 126, 234, 0.4)',
+            boxShadow: '0 10px 40px rgba(0, 102, 255, 0.4)',
             zIndex: '9999',
             fontSize: '1rem',
             fontWeight: '500',
@@ -140,86 +148,248 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ===== Travel Form Functionality =====
 
-    // 도시 검색 데이터
-    const cities = [
-        { name: '파리', country: '프랑스', icon: '🇫🇷' },
-        { name: '도쿄', country: '일본', icon: '🇯🇵' },
-        { name: '제주도', country: '대한민국', icon: '🇰🇷' },
-        { name: '뉴욕', country: '미국', icon: '🇺🇸' },
-        { name: '런던', country: '영국', icon: '🇬🇧' },
-        { name: '로마', country: '이탈리아', icon: '🇮🇹' },
-        { name: '바르셀로나', country: '스페인', icon: '🇪🇸' },
-        { name: '방콕', country: '태국', icon: '🇹🇭' },
-        { name: '싱가포르', country: '싱가포르', icon: '🇸🇬' },
-        { name: '홍콩', country: '중국', icon: '🇭🇰' },
-        { name: '시드니', country: '호주', icon: '🇦🇺' },
-        { name: '두바이', country: 'UAE', icon: '🇦🇪' },
-        { name: '오사카', country: '일본', icon: '🇯🇵' },
-        { name: '부산', country: '대한민국', icon: '🇰🇷' },
-        { name: '서울', country: '대한민국', icon: '🇰🇷' },
-        { name: '하와이', country: '미국', icon: '🇺🇸' },
-        { name: '발리', country: '인도네시아', icon: '🇮🇩' },
-        { name: '프라하', country: '체코', icon: '🇨🇿' },
-        { name: '암스테르담', country: '네덜란드', icon: '🇳🇱' },
-        { name: '빈', country: '오스트리아', icon: '🇦🇹' }
-    ];
+    // 선택된 여행지 배열
+    const destinations = [];
+    const MAX_DESTINATIONS = 5;
 
-    const destinationInput = document.getElementById('destinationInput');
-    const searchSuggestions = document.getElementById('searchSuggestions');
+    // DOM 요소
+    const destinationsContainer = document.getElementById('destinationsContainer');
+    const addDestinationBtn = document.getElementById('addDestinationBtn');
+    const selectedDestinations = document.getElementById('selectedDestinations');
     const startDateInput = document.getElementById('startDate');
     const endDateInput = document.getElementById('endDate');
     const travelPlanForm = document.getElementById('travelPlanForm');
+    const itinerarySection = document.getElementById('itinerarySection');
 
-    // 도시 검색 기능
-    if (destinationInput && searchSuggestions) {
-        destinationInput.addEventListener('input', function () {
-            const query = this.value.trim().toLowerCase();
+    // Debounce 함수
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
 
-            if (query.length === 0) {
-                searchSuggestions.classList.remove('active');
-                return;
-            }
+    // 도시 검색 API 호출 (debounce 적용)
+    const searchCitiesDebounced = debounce(async function (query, suggestionsEl) {
+        if (!query || query.length < 2) {
+            suggestionsEl.classList.remove('active');
+            return;
+        }
 
-            const filtered = cities.filter(city =>
-                city.name.toLowerCase().includes(query) ||
-                city.country.toLowerCase().includes(query)
-            );
+        try {
+            const cities = await TravelAPI.searchCities(query);
 
-            if (filtered.length > 0) {
-                searchSuggestions.innerHTML = filtered.map(city => `
-                    <div class="suggestion-item" data-city="${city.name}">
-                        <span class="suggestion-icon">${city.icon}</span>
+            if (cities.length > 0) {
+                suggestionsEl.innerHTML = cities.map(city => `
+                    <div class="suggestion-item" data-name="${city.name}" data-country="${city.country}">
+                        <span class="suggestion-icon">📍</span>
                         <span class="suggestion-text">
                             <span class="suggestion-name">${city.name}</span>
                             <span class="suggestion-country">${city.country}</span>
                         </span>
                     </div>
                 `).join('');
-                searchSuggestions.classList.add('active');
-
-                // 클릭 이벤트 추가
-                searchSuggestions.querySelectorAll('.suggestion-item').forEach(item => {
-                    item.addEventListener('click', function () {
-                        destinationInput.value = this.dataset.city;
-                        searchSuggestions.classList.remove('active');
-                    });
-                });
+                suggestionsEl.classList.add('active');
             } else {
-                searchSuggestions.classList.remove('active');
+                // 검색 결과 없을 때 직접 입력 허용
+                suggestionsEl.innerHTML = `
+                    <div class="suggestion-item" data-name="${query}" data-country="">
+                        <span class="suggestion-icon">✏️</span>
+                        <span class="suggestion-text">
+                            <span class="suggestion-name">"${query}" 직접 입력</span>
+                        </span>
+                    </div>
+                `;
+                suggestionsEl.classList.add('active');
+            }
+        } catch (error) {
+            console.error('City search error:', error);
+        }
+    }, 300);
+
+    // 여행지 입력 필드에 이벤트 리스너 추가
+    function initDestinationInput(inputEl, index) {
+        const suggestionsEl = inputEl.parentElement.querySelector('.search-suggestions');
+
+        inputEl.addEventListener('input', function () {
+            searchCitiesDebounced(this.value.trim(), suggestionsEl);
+        });
+
+        inputEl.addEventListener('focus', function () {
+            if (this.value.trim().length >= 2) {
+                searchCitiesDebounced(this.value.trim(), suggestionsEl);
             }
         });
 
-        // 외부 클릭 시 검색 결과 닫기
+        // 클릭 이벤트 위임
+        suggestionsEl.addEventListener('click', function (e) {
+            const item = e.target.closest('.suggestion-item');
+            if (item) {
+                const name = item.dataset.name;
+                const country = item.dataset.country;
+                inputEl.value = country ? `${name}, ${country}` : name;
+                inputEl.dataset.name = name;
+                inputEl.dataset.country = country;
+                suggestionsEl.classList.remove('active');
+                updateSelectedDestinationsTags();
+            }
+        });
+
+        // 외부 클릭 시 닫기
         document.addEventListener('click', function (e) {
-            if (!destinationInput.contains(e.target) && !searchSuggestions.contains(e.target)) {
-                searchSuggestions.classList.remove('active');
+            if (!inputEl.contains(e.target) && !suggestionsEl.contains(e.target)) {
+                suggestionsEl.classList.remove('active');
             }
         });
     }
 
+    // 여행지 추가
+    function addDestination() {
+        const items = destinationsContainer.querySelectorAll('.destination-item');
+        if (items.length >= MAX_DESTINATIONS) {
+            showNotification(`⚠️ 최대 ${MAX_DESTINATIONS}개의 여행지만 추가할 수 있습니다.`);
+            return;
+        }
+
+        const newIndex = items.length;
+        const newItem = document.createElement('div');
+        newItem.className = 'destination-item';
+        newItem.dataset.index = newIndex;
+        newItem.innerHTML = `
+            <div class="destination-number">${newIndex + 1}</div>
+            <div class="search-input-wrapper">
+                <input type="text" class="form-input search-input destination-input" 
+                    placeholder="도시 또는 국가를 검색하세요" autocomplete="off" data-index="${newIndex}">
+                <span class="search-icon">🔍</span>
+                <div class="search-suggestions"></div>
+            </div>
+            <button type="button" class="remove-destination-btn" title="삭제">
+                <span>✕</span>
+            </button>
+        `;
+
+        destinationsContainer.appendChild(newItem);
+
+        // 새 입력 필드에 이벤트 리스너 추가
+        const newInput = newItem.querySelector('.destination-input');
+        initDestinationInput(newInput, newIndex);
+        newInput.focus();
+
+        // 삭제 버튼 이벤트
+        const removeBtn = newItem.querySelector('.remove-destination-btn');
+        removeBtn.addEventListener('click', function () {
+            removeDestination(newItem);
+        });
+
+        // 첫 번째 아이템의 삭제 버튼 활성화
+        updateRemoveButtons();
+
+        // 추가 버튼 숨기기 (최대 개수 도달 시)
+        if (items.length + 1 >= MAX_DESTINATIONS) {
+            addDestinationBtn.style.display = 'none';
+        }
+    }
+
+    // 여행지 삭제
+    function removeDestination(item) {
+        item.remove();
+        updateDestinationNumbers();
+        updateRemoveButtons();
+        updateSelectedDestinationsTags();
+
+        // 추가 버튼 다시 표시
+        addDestinationBtn.style.display = 'inline-flex';
+    }
+
+    // 여행지 번호 업데이트
+    function updateDestinationNumbers() {
+        const items = destinationsContainer.querySelectorAll('.destination-item');
+        items.forEach((item, index) => {
+            item.dataset.index = index;
+            item.querySelector('.destination-number').textContent = index + 1;
+            item.querySelector('.destination-input').dataset.index = index;
+        });
+    }
+
+    // 삭제 버튼 표시/숨김
+    function updateRemoveButtons() {
+        const items = destinationsContainer.querySelectorAll('.destination-item');
+        items.forEach((item, index) => {
+            const removeBtn = item.querySelector('.remove-destination-btn');
+            if (items.length === 1) {
+                removeBtn.style.visibility = 'hidden';
+            } else {
+                removeBtn.style.visibility = 'visible';
+            }
+        });
+    }
+
+    // 선택된 여행지 태그 업데이트
+    function updateSelectedDestinationsTags() {
+        if (!selectedDestinations) return;
+
+        const inputs = destinationsContainer.querySelectorAll('.destination-input');
+        const tags = [];
+
+        inputs.forEach((input, index) => {
+            const value = input.value.trim();
+            if (value) {
+                tags.push(`
+                    <span class="selected-destination-tag">
+                        <span class="tag-order">${index + 1}</span>
+                        ${value}
+                    </span>
+                `);
+            }
+        });
+
+        if (tags.length > 1) {
+            selectedDestinations.innerHTML = `
+                <span style="color: var(--text-light); font-size: 0.9rem;">📍 여행 경로: </span>
+                ${tags.join('<span style="color: var(--text-light); margin: 0 0.25rem;">→</span>')}
+            `;
+        } else {
+            selectedDestinations.innerHTML = '';
+        }
+    }
+
+    // 폼에서 여행지 데이터 수집
+    function collectDestinations() {
+        const inputs = destinationsContainer.querySelectorAll('.destination-input');
+        const result = [];
+
+        inputs.forEach(input => {
+            const value = input.value.trim();
+            if (value) {
+                result.push({
+                    name: input.dataset.name || value,
+                    country: input.dataset.country || '',
+                    displayName: value
+                });
+            }
+        });
+
+        return result;
+    }
+
+    // 초기화
+    if (addDestinationBtn) {
+        addDestinationBtn.addEventListener('click', addDestination);
+    }
+
+    // 첫 번째 여행지 입력 필드 초기화
+    const firstInput = destinationsContainer?.querySelector('.destination-input');
+    if (firstInput) {
+        initDestinationInput(firstInput, 0);
+    }
+
     // 날짜 유효성 검사
     if (startDateInput && endDateInput) {
-        // 오늘 날짜를 최소값으로 설정
         const today = new Date().toISOString().split('T')[0];
         startDateInput.min = today;
         endDateInput.min = today;
@@ -232,22 +402,116 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // 로딩 오버레이 표시/숨기기
+    function showLoading(message = 'AI가 일정을 생성하고 있습니다...') {
+        const overlay = document.createElement('div');
+        overlay.className = 'loading-overlay';
+        overlay.id = 'loadingOverlay';
+        overlay.innerHTML = `
+            <div class="loading-spinner"></div>
+            <p class="loading-text">${message}</p>
+        `;
+        document.body.appendChild(overlay);
+    }
+
+    function hideLoading() {
+        const overlay = document.getElementById('loadingOverlay');
+        if (overlay) overlay.remove();
+    }
+
+    // 일정 결과 표시
+    function displayItinerary(itinerary) {
+        if (!itinerary || !itinerarySection) return;
+
+        const titleEl = document.getElementById('itineraryTitle');
+        const summaryEl = document.getElementById('itinerarySummary');
+        const daysEl = document.getElementById('itineraryDays');
+        const tipsEl = document.getElementById('itineraryTips');
+
+        // 제목과 요약
+        if (titleEl) titleEl.textContent = `🗺️ ${itinerary.title || '여행 일정'}`;
+        if (summaryEl) summaryEl.textContent = itinerary.summary || '';
+
+        // 일별 일정
+        if (daysEl && itinerary.days) {
+            daysEl.innerHTML = itinerary.days.map(day => `
+                <div class="itinerary-day">
+                    <div class="day-header">
+                        <div class="day-number">Day ${day.day}</div>
+                        <div class="day-info">
+                            <h3>${day.date || ''}</h3>
+                            <p>${day.location || ''}</p>
+                        </div>
+                    </div>
+                    <div class="day-schedule">
+                        ${day.schedule.map(item => `
+                            <div class="schedule-item">
+                                <div class="schedule-time">${item.time}</div>
+                                <div class="schedule-content">
+                                    <div class="schedule-activity">${item.activity}</div>
+                                    <div class="schedule-description">${item.description}</div>
+                                    <span class="schedule-type ${item.type}">${getTypeLabel(item.type)}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 여행 팁
+        if (tipsEl && itinerary.tips && itinerary.tips.length > 0) {
+            tipsEl.innerHTML = `
+                <h4>💡 여행 팁</h4>
+                <ul>
+                    ${itinerary.tips.map(tip => `<li>${tip}</li>`).join('')}
+                </ul>
+            `;
+        }
+
+        // 섹션 표시 및 스크롤
+        itinerarySection.style.display = 'block';
+        itinerarySection.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // 활동 타입 라벨
+    function getTypeLabel(type) {
+        const labels = {
+            food: '🍽️ 맛집',
+            activity: '🏄 액티비티',
+            culture: '🎭 문화',
+            nature: '🌿 자연',
+            shopping: '🛍️ 쇼핑',
+            transport: '🚗 이동'
+        };
+        return labels[type] || type;
+    }
+
+    // 새 일정 만들기 버튼
+    const newItineraryBtn = document.getElementById('newItineraryBtn');
+    if (newItineraryBtn) {
+        newItineraryBtn.addEventListener('click', function () {
+            itinerarySection.style.display = 'none';
+            const formSection = document.querySelector('.travel-form-section');
+            if (formSection) formSection.scrollIntoView({ behavior: 'smooth' });
+        });
+    }
+
     // 폼 제출 핸들러
     if (travelPlanForm) {
-        travelPlanForm.addEventListener('submit', function (e) {
+        travelPlanForm.addEventListener('submit', async function (e) {
             e.preventDefault();
 
             // 폼 데이터 수집
-            const destination = destinationInput?.value.trim();
+            const destinations = collectDestinations();
             const startDate = startDateInput?.value;
             const endDate = endDateInput?.value;
             const companion = document.querySelector('input[name="companion"]:checked')?.value;
             const styles = Array.from(document.querySelectorAll('input[name="style"]:checked')).map(el => el.value);
 
             // 유효성 검사
-            if (!destination) {
-                showNotification('⚠️ 여행지를 입력해주세요!');
-                destinationInput.focus();
+            if (destinations.length === 0) {
+                showNotification('⚠️ 최소 한 개의 여행지를 입력해주세요!');
                 return;
             }
 
@@ -266,27 +530,29 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            // 폼 데이터 로그
-            console.log('📋 여행 계획 데이터:', {
-                destination,
-                startDate,
-                endDate,
-                companion,
-                styles
-            });
+            console.log('📋 여행 계획 데이터:', { destinations, startDate, endDate, companion, styles });
 
-            // 로딩 상태 표시
-            const submitBtn = document.getElementById('generateBtn');
-            const originalContent = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<span class="btn-sparkle">⏳</span><span class="btn-text">일정 생성 중...</span>';
-            submitBtn.disabled = true;
+            // 로딩 표시
+            showLoading('✨ AI가 맞춤 여행 일정을 생성하고 있습니다...');
 
-            // 시뮬레이션 (실제로는 API 호출)
-            setTimeout(() => {
-                submitBtn.innerHTML = originalContent;
-                submitBtn.disabled = false;
-                showNotification('✅ 일정이 성공적으로 생성되었습니다! (데모)');
-            }, 2000);
+            try {
+                const itinerary = await TravelAPI.generateItinerary({
+                    destinations,
+                    startDate,
+                    endDate,
+                    companion,
+                    styles
+                });
+
+                hideLoading();
+                displayItinerary(itinerary);
+                showNotification('✅ 일정이 성공적으로 생성되었습니다!');
+
+            } catch (error) {
+                hideLoading();
+                console.error('Itinerary generation error:', error);
+                showNotification('❌ 일정 생성에 실패했습니다. 다시 시도해주세요.');
+            }
         });
     }
 
@@ -302,4 +568,292 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     console.log('🌍 AI Travel Planner loaded successfully!');
+
+    // ===== Authentication UI Handlers =====
+
+    // DOM 요소 참조
+    const authModalOverlay = document.getElementById('authModalOverlay');
+    const modalClose = document.getElementById('modalClose');
+    const loginTab = document.getElementById('loginTab');
+    const signupTab = document.getElementById('signupTab');
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    const authError = document.getElementById('authError');
+    const userProfile = document.getElementById('userProfile');
+    const profileBtn = document.getElementById('profileBtn');
+    const profileDropdown = document.getElementById('profileDropdown');
+    const profileEmail = document.getElementById('profileEmail');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    // 모달 열기 (tab: 'login' 또는 'signup')
+    window.openAuthModal = function (tab = 'login') {
+        if (authModalOverlay) {
+            authModalOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            // 탭 전환
+            if (tab === 'signup') {
+                signupTab.classList.add('active');
+                loginTab.classList.remove('active');
+                signupForm.style.display = 'flex';
+                loginForm.style.display = 'none';
+            } else {
+                loginTab.classList.add('active');
+                signupTab.classList.remove('active');
+                loginForm.style.display = 'flex';
+                signupForm.style.display = 'none';
+            }
+        }
+    };
+
+    // 모달 닫기
+    function closeAuthModal() {
+        if (authModalOverlay) {
+            authModalOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+            hideAuthError();
+            resetForms();
+        }
+    }
+
+    // 에러 메시지 표시
+    function showAuthError(message) {
+        if (authError) {
+            authError.textContent = message;
+            authError.style.display = 'block';
+        }
+    }
+
+    // 에러 메시지 숨기기
+    function hideAuthError() {
+        if (authError) {
+            authError.style.display = 'none';
+        }
+    }
+
+    // 이메일 인증 안내 메시지 표시
+    function showEmailVerificationMessage(email) {
+        const authModal = document.querySelector('.auth-modal');
+        if (authModal) {
+            authModal.innerHTML = `
+                <div class="email-verification-message">
+                    <div class="verification-icon">✉️</div>
+                    <h2 class="verification-title">인증 메일을 보냈습니다!</h2>
+                    <p class="verification-text">
+                        <strong>${email}</strong> 주소로<br>
+                        인증 메일을 발송했습니다.
+                    </p>
+                    <p class="verification-subtext">
+                        이메일을 확인하고 인증 링크를 클릭해주세요.<br>
+                        메일이 보이지 않으면 스팸함을 확인해주세요.
+                    </p>
+                    <button class="auth-submit-btn verification-close-btn" onclick="location.reload()">
+                        <span class="btn-text">확인</span>
+                    </button>
+                </div>
+            `;
+        }
+    }
+
+    // 폼 초기화
+    function resetForms() {
+        if (loginForm) loginForm.reset();
+        if (signupForm) signupForm.reset();
+    }
+
+    // 모달 닫기 버튼
+    if (modalClose) {
+        modalClose.addEventListener('click', closeAuthModal);
+    }
+
+    // 오버레이 클릭 시 닫기
+    if (authModalOverlay) {
+        authModalOverlay.addEventListener('click', function (e) {
+            if (e.target === authModalOverlay) {
+                closeAuthModal();
+            }
+        });
+    }
+
+    // ESC 키로 닫기
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && authModalOverlay?.classList.contains('active')) {
+            closeAuthModal();
+        }
+    });
+
+    // 탭 전환
+    if (loginTab && signupTab) {
+        loginTab.addEventListener('click', function () {
+            loginTab.classList.add('active');
+            signupTab.classList.remove('active');
+            loginForm.style.display = 'flex';
+            signupForm.style.display = 'none';
+            hideAuthError();
+        });
+
+        signupTab.addEventListener('click', function () {
+            signupTab.classList.add('active');
+            loginTab.classList.remove('active');
+            signupForm.style.display = 'flex';
+            loginForm.style.display = 'none';
+            hideAuthError();
+        });
+    }
+
+    // 구글 로그인 버튼
+    const googleLoginBtn = document.getElementById('googleLoginBtn');
+    if (googleLoginBtn) {
+        googleLoginBtn.addEventListener('click', async function () {
+            const result = await Auth.signInWithGoogle();
+            if (!result.success) {
+                showAuthError(getErrorMessage(result.error));
+            }
+            // 성공 시 리다이렉트되므로 별도 처리 불필요
+        });
+    }
+
+    // 로그인 폼 제출
+    if (loginForm) {
+        loginForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            hideAuthError();
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const submitBtn = document.getElementById('loginSubmitBtn');
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="btn-text">로그인 중...</span>';
+
+            const result = await Auth.signIn(email, password);
+
+            if (result.success) {
+                closeAuthModal();
+                showNotification('✅ 로그인 성공!');
+                updateUIForLoggedInUser(result.data.user);
+            } else {
+                showAuthError(getErrorMessage(result.error));
+            }
+
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span class="btn-text">로그인</span>';
+        });
+    }
+
+    // 회원가입 폼 제출
+    if (signupForm) {
+        signupForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            hideAuthError();
+
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
+            const submitBtn = document.getElementById('signupSubmitBtn');
+
+            // 비밀번호 확인
+            if (password !== passwordConfirm) {
+                showAuthError('비밀번호가 일치하지 않습니다.');
+                return;
+            }
+
+            // 비밀번호 길이 확인
+            if (password.length < 6) {
+                showAuthError('비밀번호는 6자 이상이어야 합니다.');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="btn-text">가입 중...</span>';
+
+            const result = await Auth.signUp(email, password);
+
+            if (result.success) {
+                // 이메일 인증 필요 메시지 표시
+                showEmailVerificationMessage(email);
+            } else {
+                showAuthError(getErrorMessage(result.error));
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span class="btn-text">회원가입</span>';
+            }
+        });
+    }
+
+    // 프로필 드롭다운 토글
+    if (profileBtn && profileDropdown) {
+        profileBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('active');
+        });
+
+        document.addEventListener('click', function () {
+            profileDropdown.classList.remove('active');
+        });
+    }
+
+    // 로그아웃
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async function () {
+            const result = await Auth.signOut();
+            if (result.success) {
+                showNotification('👋 로그아웃 되었습니다.');
+                updateUIForLoggedOutUser();
+            }
+        });
+    }
+
+    // 로그인 상태 UI 업데이트
+    function updateUIForLoggedInUser(user) {
+        const authButtons = document.getElementById('authButtons');
+        if (authButtons) authButtons.style.display = 'none';
+        if (userProfile) {
+            userProfile.style.display = 'flex';
+            if (profileEmail) profileEmail.textContent = user.email;
+        }
+    }
+
+    // 로그아웃 상태 UI 업데이트
+    function updateUIForLoggedOutUser() {
+        const authButtons = document.getElementById('authButtons');
+        if (authButtons) authButtons.style.display = 'flex';
+        if (userProfile) userProfile.style.display = 'none';
+        if (profileDropdown) profileDropdown.classList.remove('active');
+    }
+
+    // 에러 메시지 한글화
+    function getErrorMessage(error) {
+        const messages = {
+            'Invalid login credentials': '이메일 또는 비밀번호가 올바르지 않습니다.',
+            'Email not confirmed': '이메일 인증이 완료되지 않았습니다. 메일함을 확인해주세요.',
+            'User already registered': '이미 가입된 이메일입니다.',
+            'Password should be at least 6 characters': '비밀번호는 6자 이상이어야 합니다.',
+            'Signup requires a valid password': '유효한 비밀번호를 입력해주세요.'
+        };
+        return messages[error] || error || '오류가 발생했습니다.';
+    }
+
+    // 페이지 로드 시 세션 확인
+    async function checkSession() {
+        if (typeof Auth === 'undefined') return;
+
+        const session = await Auth.getSession();
+        if (session?.user) {
+            updateUIForLoggedInUser(session.user);
+        }
+    }
+
+    // 인증 상태 변경 리스너
+    if (typeof Auth !== 'undefined') {
+        Auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' && session?.user) {
+                updateUIForLoggedInUser(session.user);
+            } else if (event === 'SIGNED_OUT') {
+                updateUIForLoggedOutUser();
+            }
+        });
+        checkSession();
+    }
+
+    console.log('🔐 Auth UI initialized');
 });

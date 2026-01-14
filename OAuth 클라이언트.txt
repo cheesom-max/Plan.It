@@ -1,0 +1,5 @@
+OAuth 클라이언트 
+
+클라이언트 ID: 69011833928-r9nigfi1lere6qcedqifc3hreo7fu1dd.apps.googleusercontent.com
+
+클라이언트 보안 비밀번호 : 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
