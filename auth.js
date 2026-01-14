@@ -1,5 +1,9 @@
 // Authentication Module
 // AI Travel Planner - 인증 관련 함수
+// [중요] Supabase OAuth 설정 가이드:
+// 1. Supabase 대시보드 > Authentication > URL Configuration으로 이동
+// 2. "Redirect URLs"에 현재 배포된 도메인(예: https://ai-travel-planner-ivory-nu.vercel.app)을 반드시 추가해야 합니다.
+// 3. 로컬 테스트를 위해 http://localhost:3000 등도 포함되어 있어야 합니다.
 
 // supabaseClient를 window 객체에서 가져오기
 const getSupabaseClient = () => window.supabaseClient;
@@ -58,10 +62,18 @@ const Auth = {
     // 구글 로그인
     async signInWithGoogle() {
         try {
+            // 현재 도메인을 Redirect URL로 설정
+            const redirectUrl = window.location.origin;
+            console.log('🔵 Google Login Redirect URL 설정:', redirectUrl);
+
             const { data, error } = await getSupabaseClient().auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: window.location.origin
+                    redirectTo: redirectUrl,
+                    queryParams: {
+                        access_type: 'offline',
+                        prompt: 'consent'
+                    }
                 }
             });
 
