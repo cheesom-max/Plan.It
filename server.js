@@ -104,66 +104,121 @@ app.post('/api/generate-itinerary', async (req, res) => {
 - 여행 스타일: ${styleTexts}
 
 [필수 요구사항 (Strict Rules)]
-1. **감성적인 장소 묘사 (핵심)**: 
-   - 각 여행지의 설명(\`description\`)은 단순한 정보 전달을 넘어, 그곳의 **분위기, 색감, 소리, 공기** 등 오감을 자극하는 표현을 사용하세요.
-   - 사용자가 그곳에 있는 상상을 할 수 있도록 **여행 에세이 톤**으로 작성하세요.
-   - **반드시 2문장 이상**으로 구체적이고 길게 작성해야 합니다.
-2. **계절성 반영**: 여행 기간(${startDate}월)의 날씨와 계절적 풍경(꽃, 단풍, 눈, 햇살 등)을 묘사에 적극적으로 녹여내세요.
-3. **동선 최적화**: 지리적으로 가까운 곳끼리 묶어 이동 시간을 최소화하고, 이동 방법과 시간을 구체적으로 명시하세요.
-4. **맛집 추천 (3 options)**: 
-   - 식사 일정에는 구글 맵 평점 4.0 이상으로 추정되는 맛집 **3곳**을 제안하세요.
-   - 맛집의 특징(\`features\`) 또한 "맛있다"는 표현보다는 "입안 가득 퍼지는 육즙", "현지인들의 웃음소리가 들리는" 등 감각적으로 묘사하세요.
+1. 반드시 total_days에 지정된 일수(${tripDays}일)만큼 전체 일정을 생성하세요. 중간에 멈추지 마세요.
+2. 각 장소는 distance_from_previous 필드에 이전 장소로부터의 거리(km)와 이동시간을 반드시 포함하세요.
+3. 하루 일정은 같은 지역(구/동) 내 장소들을 묶어 동선을 최적화하세요.
+4. selected_categories에 있는 모든 카테고리를 전체 일정에 균등하게 배분하세요.
+5. 네이버 블로그, Google Maps, 트립어드바이저 리뷰를 참고하여 평점 4.0 이상의 검증된 장소만 추천하세요.
+6. 각 장소의 설명은 여행 에세이 톤으로 2문장 이상 감성적으로 작성하세요.
 
 [출력 형식]
-반드시 아래 JSON 형식으로만 응답하세요. (주석은 제외)
+반드시 아래 JSON 스키마를 준수하여 응답하세요. (주석은 제외)
 
+\`\`\`json
 {
+  "meta": {
+    "total_days": ${tripDays},
+    "destination": "${destinationTexts}",
+    "travel_theme": "${styleTexts}",
+    "travelers": "${companionMap[companion] || companion}",
+    "selected_categories": ["맛집탐방", "휴양", "문화예술", "쇼핑", "자연탐험", "포토스팟", "나이트라이프", "액티비티"]
+  },
+  
+  "generation_rules": {
+    "must_generate_all_days": true,
+    "optimize_route": true,
+    "route_optimization_method": "geographic_clustering",
+    "max_travel_time_between_spots": "30분",
+    "include_distance_info": true,
+    "search_based_recommendations": true
+  },
+
   "title": "여행 제목 (예: 늦가을 교토, 붉게 물든 낭만 여행)",
-  "summary": "여행 요약 (여행의 전체적인 무드와 컨셉을 2-3문장으로 요약)",
+  "summary": "여행 요약 (2-3문장)",
+  
   "days": [
     {
       "day": 1,
       "date": "YYYY-MM-DD",
       "location": "주요 지역",
+      "day_theme": "그 날의 테마",
+      "total_walking_distance": "3.2km",
       "schedule": [
         {
-          "time": "09:00",
-          "type": "activity",
-          "place": "장소명 (한글/영문 병기)",
-          "description": "이곳은 단순한 공원이 아닙니다. 아침 이슬이 맺힌 풀내음을 맡으며 산책하다 보면 복잡했던 머릿속이 맑아지는 것을 느낄 수 있습니다. 특히 호수에 비친 윤슬을 배경으로 연인과 함께 인생 사진을 남기기에 가장 완벽한 장소입니다.", 
-          "travel_info": "호텔에서 도보 10분 산책"
+          "order": 1,
+          "time": "14:00",
+          "duration": "2시간",
+          "category": "문화예술",
+          "category_icon": "🏛️",
+          "place": {
+            "name_ko": "장소명",
+            "name_en": "Place Name",
+            "address": "주소"
+          },
+          "distance_from_previous": {
+            "value": 1.2,
+            "unit": "km",
+            "travel_time": "도보 15분",
+            "travel_method": "도보"
+          },
+          "travel_info": {
+            "from": "이전 장소",
+            "method": "이동 수단",
+            "detail": "상세 이동 방법"
+          },
+          "description": "장소 설명 (감성적인 에세이 톤으로 작성)",
+          "highlight": "핵심 포인트",
+          "photo_spot": "추천 포토스팟",
+          "recommended_by": "네이버 블로그 인기 후기 / 미쉐린 가이드 등",
+          "rating": {
+            "google": 4.5,
+            "naver": 4.3
+          },
+          "tips": "방문 팁"
         },
         {
-          "time": "12:00",
-          "type": "food",
-          "meal_type": "점심",
-          "travel_info": "공원 후문에서 도보 5분",
+          "order": 2,
+          "time": "17:00",
+          "duration": "1시간 30분",
+          "category": "맛집탐방",
+          "category_icon": "🍽️",
+          "meal_type": "저녁",
+          "distance_from_previous": {
+            "value": 0.8,
+            "unit": "km",
+            "travel_time": "도보 10분",
+            "travel_method": "도보"
+          },
+          "travel_info": {
+            "from": "이전 장소",
+            "method": "도보",
+            "detail": "상세 경로"
+          },
           "options": [
             {
               "name": "식당 A",
-              "rating_expect": "4.5",
-              "features": "오래된 목조 건물의 따뜻한 조명 아래서 즐기는 정통 가정식",
-              "menu": "시그니처 메뉴"
-            },
-            {
-              "name": "식당 B",
-              "rating_expect": "4.3",
-              "features": "통유리창 너머로 탁 트인 도시 뷰가 펼쳐지는 힙한 공간",
-              "menu": "추천 메뉴"
-            },
-            {
-              "name": "식당 C",
-              "rating_expect": "4.7",
-              "features": "현지 셰프의 장인정신이 느껴지는 오픈 키친 스타일",
-              "menu": "추천 메뉴"
+              "rating": 4.5,
+              "category_tags": ["한식", "만두전문"],
+              "signature_menu": "대표 메뉴",
+              "price_range": "1인 15,000-25,000원",
+              "atmosphere": "분위기 설명",
+              "description": "상세 설명",
+              "recommended_by": "추천 출처",
+              "wait_time": "예상 대기 시간",
+              "reservation": "예약 방법"
             }
           ]
         }
       ]
     }
   ],
-  "tips": ["감성적인 팁 1", "실용적인 팁 2"]
+  
+  "tips": [
+    "여행 팁 1",
+    "여행 팁 2"
+  ]
 }
+\`\`\`
 JSON 데이터만 반환하세요.
 `;
 

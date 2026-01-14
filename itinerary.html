@@ -436,41 +436,64 @@
             // 스케줄 아이템 렌더링 함수 (일반 활동 vs 맛집 분기)
             function renderScheduleItem(item) {
                 // 맛집(3 options)인 경우
-                if (item.type === 'food' && item.options) {
+                if ((item.type === 'food' || item.category === '맛집탐방') && item.options) {
                     return `
                         <div class="schedule-item food-item">
                             <div class="schedule-time">${item.time} <span class="badge-food">🍽️ ${item.meal_type || '식사'}</span></div>
                             <div class="schedule-content">
+                                ${renderTravelInfo(item)}
                                 <div class="food-options-grid">
                                     ${item.options.map((opt, idx) => `
                                         <div class="food-option-card">
                                             <div class="food-rank">Option ${idx + 1}</div>
                                             <div class="food-name">${opt.name}</div>
-                                            <div class="food-meta">⭐ ${opt.rating_expect || '4.0'} | ${opt.menu || '대표 메뉴'}</div>
-                                            <div class="food-desc">"${opt.features}"</div>
+                                            <div class="food-meta">⭐ ${opt.rating || opt.rating_expect || '4.0'} | ${opt.signature_menu || opt.menu || '대표 메뉴'}</div>
+                                            <div class="food-desc">"${opt.features || opt.description || opt.atmosphere}"</div>
                                         </div>
                                     `).join('')}
                                 </div>
-                                ${item.travel_info ? `<div class="travel-info-badge">🚗 ${item.travel_info}</div>` : ''}
                             </div>
                         </div>
                     `;
                 }
 
                 // 일반 활동인 경우
+                const placeName = typeof item.place === 'object' ? item.place.name_ko : (item.place || item.activity || '장소');
+                const categoryLabel = item.category ? `${item.category_icon || ''} ${item.category}` : getTypeLabel(item.type);
+
                 return `
                     <div class="schedule-item">
                         <div class="schedule-time">${item.time}</div>
                         <div class="schedule-content">
                             <div class="schedule-header">
-                                <span class="schedule-place">${item.place || item.activity || '장소'}</span>
-                                <span class="schedule-type ${item.type}">${getTypeLabel(item.type)}</span>
+                                <span class="schedule-place">${placeName}</span>
+                                <span class="schedule-type">${categoryLabel}</span>
                             </div>
                             <div class="schedule-description">${item.description}</div>
-                            ${item.travel_info ? `<div class="travel-info-text">👣 ${item.travel_info}</div>` : ''}
+                            ${renderTravelInfo(item)}
                         </div>
                     </div>
                 `;
+            }
+
+            function renderTravelInfo(item) {
+                let html = '';
+
+                // 1. 거리/이동 정보 (New Schema)
+                if (item.distance_from_previous) {
+                    const dist = item.distance_from_previous;
+                    html += `<div class="travel-info-text">🚗 ${dist.travel_method} ${dist.travel_time} (${dist.value}${dist.unit})</div>`;
+                }
+                // 2. 이동 상세 (New Schema)
+                else if (item.travel_info && typeof item.travel_info === 'object') {
+                    html += `<div class="travel-info-text">👣 ${item.travel_info.method} (${item.travel_info.detail})</div>`;
+                }
+                // 3. 기존 방식 (fallback)
+                else if (item.travel_info) {
+                    html += `<div class="travel-info-text">👣 ${item.travel_info}</div>`;
+                }
+
+                return html;
             }
 
             // 여행 팁 표시
