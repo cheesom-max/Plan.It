@@ -724,27 +724,18 @@ document.addEventListener('DOMContentLoaded', function () {
         if (summaryEl) summaryEl.textContent = itinerary.summary || '';
 
         // 일별 일정
-        if (daysEl && itinerary.days) {
+        if (daysEl && Array.isArray(itinerary.days)) {
             daysEl.innerHTML = itinerary.days.map(day => `
                 <div class="itinerary-day">
                     <div class="day-header">
                         <div class="day-number">Day ${day.day}</div>
                         <div class="day-info">
-                            <h3>${day.date || ''}</h3>
+                            <h3>${day.date || `Day ${day.day}`}</h3>
                             <p>${day.location || ''}</p>
                         </div>
                     </div>
                     <div class="day-schedule">
-                        ${day.schedule.map(item => `
-                            <div class="schedule-item">
-                                <div class="schedule-time">${item.time}</div>
-                                <div class="schedule-content">
-                                    <div class="schedule-activity">${item.activity}</div>
-                                    <div class="schedule-description">${item.description}</div>
-                                    <span class="schedule-type ${item.type}">${getTypeLabel(item.type)}</span>
-                                </div>
-                            </div>
-                        `).join('')}
+                        ${day.schedule.map(item => renderScheduleItem(item)).join('')}
                     </div>
                 </div>
             `).join('');
@@ -763,6 +754,46 @@ document.addEventListener('DOMContentLoaded', function () {
         // 섹션 표시 및 스크롤
         itinerarySection.style.display = 'block';
         itinerarySection.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // 스케줄 아이템 렌더링 (일반 활동 vs 맛집 분기)
+    function renderScheduleItem(item) {
+        // 맛집(3 options)인 경우
+        if (item.type === 'food' && item.options) {
+            return `
+                <div class="schedule-item food-item">
+                    <div class="schedule-time">${item.time} <span class="badge-food">🍽️ ${item.meal_type || '식사'}</span></div>
+                    <div class="schedule-content">
+                        <div class="food-options-grid">
+                            ${item.options.map((opt, idx) => `
+                                <div class="food-option-card">
+                                    <div class="food-rank">Option ${idx + 1}</div>
+                                    <div class="food-name">${opt.name}</div>
+                                    <div class="food-meta">⭐ ${opt.rating_expect || '4.0'} | ${opt.menu || '대표 메뉴'}</div>
+                                    <div class="food-desc">"${opt.features}"</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        ${item.travel_info ? `<div class="travel-info-badge">🚗 ${item.travel_info}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        // 일반 활동인 경우
+        return `
+            <div class="schedule-item">
+                <div class="schedule-time">${item.time}</div>
+                <div class="schedule-content">
+                    <div class="schedule-header">
+                        <span class="schedule-place">${item.place || item.activity || '장소'}</span>
+                        <span class="schedule-type ${item.type}">${getTypeLabel(item.type)}</span>
+                    </div>
+                    <div class="schedule-description">${item.description}</div>
+                    ${item.travel_info ? `<div class="travel-info-text">👣 ${item.travel_info}</div>` : ''}
+                </div>
+            </div>
+        `;
     }
 
     // 활동 타입 라벨

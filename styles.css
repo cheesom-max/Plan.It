@@ -3016,4 +3016,104 @@ body {
 .trip-arrow {
     font-size: 1.2rem;
     color: var(--text-light);
+}/* Itinerary New Elements - Enhanced Visualization */
+.schedule-item.food-item {
+    background: #fff8f0;
+    border-left: 4px solid #ff9f43;
+}
+
+.badge-food {
+    font-size: 0.8rem;
+    color: #ff9f43;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+.food-options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.food-option-card {
+    background: #fff;
+    border: 1px solid #f0f0f0;
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s ease;
+}
+
+.food-option-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.06);
+}
+
+.food-rank {
+    font-size: 0.75rem;
+    color: #adb5bd;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.food-name {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.food-meta {
+    font-size: 0.8rem;
+    color: #e67e22;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.food-desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    font-style: italic;
+    background: #f8f9fa;
+    padding: 0.5rem;
+    border-radius: 6px;
+}
+
+.schedule-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.schedule-place {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--primary-color);
+}
+
+.travel-info-badge {
+    margin-top: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: #f1f3f5;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    color: #495057;
+    font-weight: 500;
+}
+
+.travel-info-text {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #868e96;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
 }
