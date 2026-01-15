@@ -53,6 +53,14 @@
                     </button>
                 </div>
             </div>
+            <!-- Menu Toggle Button (Hamburger) -->
+            <button class="menu-toggle-btn" id="menuToggleBtn" aria-label="메뉴 열기">
+                <span class="menu-toggle-icon">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+            </button>
         </div>
     </nav>
 
@@ -403,6 +411,43 @@
             </div>
         </div>
     </div>
+
+    <!-- Slide-Out Panel (Triple Style) -->
+    <div class="slide-panel-overlay" id="slidePanelOverlay"></div>
+    <aside class="slide-panel" id="slidePanel">
+        <div class="slide-panel-header">
+            <button class="slide-panel-close" id="slidePanelClose" aria-label="닫기">×</button>
+        </div>
+        <div class="slide-panel-content">
+            <!-- 로그인 전 메뉴 -->
+            <div class="slide-panel-section" id="slidePanelGuest">
+                <button class="slide-menu-item highlight" id="slidePanelLoginBtn">로그인 / 회원가입</button>
+            </div>
+            <!-- 로그인 후 메뉴 -->
+            <div class="slide-panel-section" id="slidePanelUser" style="display: none;">
+                <div class="slide-menu-item" style="font-weight: 600; color: #868e96;">
+                    <span id="slidePanelUserEmail">사용자 이메일</span>
+                </div>
+            </div>
+            <div class="slide-panel-section">
+                <button class="slide-menu-item" id="slidePanelMyTripsBtn">
+                    <span>내 여행</span>
+                    <span class="menu-arrow">→</span>
+                </button>
+                <a href="#travel-form-section" class="slide-menu-item primary">
+                    <span>AI 맞춤 일정 만들기</span>
+                    <span class="menu-arrow">→</span>
+                </a>
+                <a href="profile.html" class="slide-menu-item" id="slidePanelProfileBtn" style="display: none;">
+                    <span>내 정보</span>
+                    <span class="menu-arrow">→</span>
+                </a>
+            </div>
+        </div>
+        <div class="slide-panel-footer" id="slidePanelFooter" style="display: none;">
+            <button class="slide-menu-item logout" id="slidePanelLogoutBtn">로그아웃</button>
+        </div>
+    </aside>
 
     <!-- Scripts -->
     <script src="supabase.js"></script>

@@ -267,21 +267,24 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            // 메인 폼 요소 찾기
-            const mainDestInput = document.querySelector('#destinationsContainer .destination-input');
-            const mainStartDate = document.getElementById('startDate');
-            const mainEndDate = document.getElementById('endDate');
-
-            // 데이터 동기화
+            // 메인 폼 요소 찾기 및 데이터 동기화
+            const mainDestInput = destinationsContainer?.querySelector('.destination-input');
             if (mainDestInput) {
                 mainDestInput.value = destination;
-                mainDestInput.dataset.name = destination.split(',')[0].trim();
-                mainDestInput.dataset.country = destination.split(',')[1]?.trim() || '';
+                mainDestInput.dataset.name = destination;
             }
-            if (mainStartDate && startDate) mainStartDate.value = startDate;
-            if (mainEndDate && endDate) mainEndDate.value = endDate;
 
-            // 날짜 입력 안내
+            // [Fix] Hero 날짜 → 메인 폼 날짜 동기화
+            const mainStartDate = document.getElementById('startDate');
+            const mainEndDate = document.getElementById('endDate');
+            if (startDate && mainStartDate) {
+                mainStartDate.value = startDate;
+            }
+            if (endDate && mainEndDate) {
+                mainEndDate.value = endDate;
+            }
+
+            // 알림
             if (!startDate || !endDate) {
                 showNotification('📅 날짜를 선택하시면 더 정확한 일정을 받을 수 있어요!');
             } else {
@@ -819,19 +822,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // [Fix] 여행지 데이터 수집 함수 (누락된 함수 구현)
-    function collectDestinations() {
-        // destinationsContainer 내의 모든 입력 필드 값 수집
-        const inputs = document.querySelectorAll('#destinationsContainer .destination-input');
-        const results = [];
-        inputs.forEach(input => {
-            const val = input.value.trim();
-            if (val) {
-                results.push(val);
-            }
-        });
-        return results;
-    }
+    // [Fix] collectDestinations 함수는 Line 653-669에 이미 정의되어 있음 (중복 제거됨)
 
     // 폼 제출 핸들러
     if (travelPlanForm) {
@@ -1357,7 +1348,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 내 여행 모달 열기 및 목록 로드
     if (myTripsBtn && myTripsModalOverlay) {
-        myTripsBtn.addEventListener('click', function () {
+        myTripsBtn.addEventListener('click', async function () {
             // 프로필 드롭다운 닫기
             const profileDropdown = document.getElementById('profileDropdown');
             if (profileDropdown) profileDropdown.classList.remove('active');
@@ -1365,47 +1356,127 @@ document.addEventListener('DOMContentLoaded', function () {
             const tripsList = document.getElementById('tripsList');
             const tripsEmpty = document.getElementById('tripsEmpty');
 
-            // localStorage에서 여행 데이터 확인 (실제 운영 시에는 DB 연동 권장)
-            const savedTrips = JSON.parse(localStorage.getItem('savedTrips') || '[]');
+            // [Fix] localStorage + Supabase DB 모두에서 여행 데이터 로드
+            let allTrips = [];
 
-            if (savedTrips.length > 0 && tripsList) {
-                tripsEmpty.style.display = 'none';
-                tripsList.innerHTML = savedTrips.map((trip, index) => `
-                    <div class="trip-card" data-index="${index}">
+            // 1. localStorage에서 로드 (로컬 저장분)
+            const localTrips = JSON.parse(localStorage.getItem('savedTrips') || '[]');
+            allTrips = [...localTrips];
+
+            // 2. Supabase DB에서 로드 (로그인한 사용자의 저장분)
+            try {
+                if (typeof Auth !== 'undefined' && window.supabaseClient) {
+                    const session = await Auth.getSession();
+                    if (session?.user) {
+                        const { data: dbTrips, error } = await window.supabaseClient
+                            .from('trips')
+                            .select('*')
+                            .eq('user_id', session.user.id)
+                            .order('created_at', { ascending: false });
+
+                        if (!error && dbTrips && dbTrips.length > 0) {
+                            // DB 데이터를 표시 가능한 형태로 변환
+                            const formattedDbTrips = dbTrips.map(trip => ({
+                                id: trip.id,
+                                title: trip.title || '나의 여행',
+                                destination: trip.destination,
+                                startDate: trip.start_date,
+                                endDate: trip.end_date,
+                                companion: trip.companion,
+                                styles: trip.styles,
+                                // DB에서 불러온 것임을 표시 (days 데이터는 별도 로드 필요)
+                                fromDB: true,
+                                dbTripId: trip.id
+                            }));
+                            // DB 데이터를 앞에 추가 (최신순)
+                            allTrips = [...formattedDbTrips, ...allTrips];
+                        }
+                    }
+                }
+            } catch (err) {
+                console.warn('DB에서 여행 목록 로드 실패:', err);
+            }
+
+            // 렌더링
+            if (allTrips.length > 0 && tripsList) {
+                if (tripsEmpty) tripsEmpty.style.display = 'none';
+                tripsList.innerHTML = allTrips.map((trip, index) => `
+                    <div class="trip-card" data-index="${index}" data-from-db="${trip.fromDB || false}" data-db-id="${trip.dbTripId || ''}">
                         <span class="trip-icon">✈️</span>
                         <div class="trip-info">
                             <div class="trip-title">${trip.title || trip.destination || '나의 여행'}</div>
-                            <div class="trip-dates">${trip.startDate || ''} ~ ${trip.endDate || ''}</div>
+                            <div class="trip-dates">${trip.startDate || trip.start_date || ''} ~ ${trip.endDate || trip.end_date || ''}</div>
                         </div>
                         <span class="trip-arrow">→</span>
                     </div>
                 `).join('');
 
-                // 여행 아이템 클릭 이벤트 (동적 바인딩 확인을 위해 직접 추가)
+                // 여행 아이템 클릭 이벤트
                 const tripCards = tripsList.querySelectorAll('.trip-card');
                 tripCards.forEach(card => {
-                    card.addEventListener('click', function () {
-                        const index = this.dataset.index;
-                        const tripData = savedTrips[index];
+                    card.addEventListener('click', async function () {
+                        const index = parseInt(this.dataset.index);
+                        const isFromDB = this.dataset.fromDb === 'true';
+                        const dbTripId = this.dataset.dbId;
+                        let tripData = allTrips[index];
+
+                        // DB에서 온 데이터인 경우 상세 일정도 로드
+                        if (isFromDB && dbTripId && window.supabaseClient) {
+                            try {
+                                // trip_days와 trip_items 로드
+                                const { data: days, error: daysError } = await window.supabaseClient
+                                    .from('trip_days')
+                                    .select(`
+                                        *,
+                                        trip_items (*)
+                                    `)
+                                    .eq('trip_id', dbTripId)
+                                    .order('day_number');
+
+                                if (!daysError && days) {
+                                    // itinerary 형식으로 변환
+                                    tripData.days = days.map(day => ({
+                                        day: day.day_number,
+                                        date: day.date,
+                                        location: day.summary,
+                                        day_theme: day.title,
+                                        schedule: day.trip_items ? day.trip_items.map(item => ({
+                                            time: item.time,
+                                            category: item.category,
+                                            place: item.place_name,
+                                            description: item.description,
+                                            duration: item.duration_minutes ? `${item.duration_minutes}분` : null
+                                        })) : []
+                                    }));
+                                }
+                            } catch (err) {
+                                console.warn('상세 일정 로드 실패:', err);
+                            }
+                        }
 
                         if (tripData) {
                             // 모달 닫기
                             myTripsModalOverlay.classList.remove('active');
 
-                            // 일정 표시
-                            // displayItinerary 함수가 tripData 구조를 처리할 수 있는지 확인 (itinerary 객체가 tripData에 직접 있는지, 아니면 tripData 자체가 itinerary인지)
-                            // 저장 구조: { id, title, startDate, endDate, summary, days, tips ... } 
-                            // displayItinerary는 위 구조를 그대로 받음
-                            displayItinerary(tripData);
+                            // 선택한 여행 데이터를 localStorage에 저장하고 itinerary.html로 이동
+                            localStorage.setItem('travelItinerary', JSON.stringify(tripData));
+                            localStorage.setItem('tripInfo', JSON.stringify({
+                                destinations: tripData.destinations || [tripData.destination] || [],
+                                startDate: tripData.startDate || tripData.start_date,
+                                endDate: tripData.endDate || tripData.end_date,
+                                companion: tripData.companion || 'alone',
+                                styles: tripData.styles || []
+                            }));
 
-                            showNotification(`📂 '${tripData.title}' 일정을 불러왔습니다!`);
+                            // itinerary.html 페이지로 이동
+                            window.location.href = 'itinerary.html';
                         }
                     });
                 });
 
             } else if (tripsEmpty) {
                 tripsEmpty.style.display = 'block';
-                if (tripsList) tripsList.innerHTML = ''; // 기존 목록 초기화
+                if (tripsList) tripsList.innerHTML = '';
                 tripsList.appendChild(tripsEmpty);
             }
 
@@ -1438,5 +1509,116 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 500);
     }
 
+    // ===== Slide-Out Panel (Triple Style) =====
+    const menuToggleBtn = document.getElementById('menuToggleBtn');
+    const slidePanel = document.getElementById('slidePanel');
+    const slidePanelOverlay = document.getElementById('slidePanelOverlay');
+    const slidePanelClose = document.getElementById('slidePanelClose');
+    const slidePanelLoginBtn = document.getElementById('slidePanelLoginBtn');
+    const slidePanelLogoutBtn = document.getElementById('slidePanelLogoutBtn');
+    const slidePanelMyTripsBtn = document.getElementById('slidePanelMyTripsBtn');
+    const slidePanelGuest = document.getElementById('slidePanelGuest');
+    const slidePanelUser = document.getElementById('slidePanelUser');
+    const slidePanelUserEmail = document.getElementById('slidePanelUserEmail');
+    const slidePanelProfileBtn = document.getElementById('slidePanelProfileBtn');
+    const slidePanelFooter = document.getElementById('slidePanelFooter');
+
+    // 패널 열기/닫기 함수
+    function openSlidePanel() {
+        slidePanel?.classList.add('active');
+        slidePanelOverlay?.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeSlidePanel() {
+        slidePanel?.classList.remove('active');
+        slidePanelOverlay?.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    // 햄버거 메뉴 버튼 클릭
+    if (menuToggleBtn) {
+        menuToggleBtn.addEventListener('click', openSlidePanel);
+    }
+
+    // 닫기 버튼 클릭
+    if (slidePanelClose) {
+        slidePanelClose.addEventListener('click', closeSlidePanel);
+    }
+
+    // 오버레이 클릭으로 닫기
+    if (slidePanelOverlay) {
+        slidePanelOverlay.addEventListener('click', closeSlidePanel);
+    }
+
+    // ESC 키로 닫기
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && slidePanel?.classList.contains('active')) {
+            closeSlidePanel();
+        }
+    });
+
+    // 슬라이드 패널 로그인 버튼
+    if (slidePanelLoginBtn) {
+        slidePanelLoginBtn.addEventListener('click', () => {
+            closeSlidePanel();
+            openAuthModal('login');
+        });
+    }
+
+    // 슬라이드 패널 로그아웃 버튼
+    if (slidePanelLogoutBtn) {
+        slidePanelLogoutBtn.addEventListener('click', async () => {
+            closeSlidePanel();
+            if (typeof Auth !== 'undefined') {
+                await Auth.signOut();
+                showNotification('👋 로그아웃되었습니다.');
+            }
+        });
+    }
+
+    // 슬라이드 패널 내 여행 버튼
+    if (slidePanelMyTripsBtn) {
+        slidePanelMyTripsBtn.addEventListener('click', () => {
+            closeSlidePanel();
+            // 기존 myTripsBtn 클릭 트리거 (내 여행 모달 열기)
+            const myTripsBtnOriginal = document.getElementById('myTripsBtn');
+            if (myTripsBtnOriginal) {
+                myTripsBtnOriginal.click();
+            }
+        });
+    }
+
+    // 로그인 상태에 따른 슬라이드 패널 UI 업데이트 함수
+    function updateSlidePanelAuthState(session) {
+        if (session?.user) {
+            // 로그인 상태
+            if (slidePanelGuest) slidePanelGuest.style.display = 'none';
+            if (slidePanelUser) slidePanelUser.style.display = 'block';
+            if (slidePanelUserEmail) slidePanelUserEmail.textContent = session.user.email;
+            if (slidePanelProfileBtn) slidePanelProfileBtn.style.display = 'flex';
+            if (slidePanelFooter) slidePanelFooter.style.display = 'block';
+        } else {
+            // 비로그인 상태
+            if (slidePanelGuest) slidePanelGuest.style.display = 'block';
+            if (slidePanelUser) slidePanelUser.style.display = 'none';
+            if (slidePanelProfileBtn) slidePanelProfileBtn.style.display = 'none';
+            if (slidePanelFooter) slidePanelFooter.style.display = 'none';
+        }
+    }
+
+    // 초기 로그인 상태 확인 및 슬라이드 패널 업데이트
+    if (typeof Auth !== 'undefined') {
+        Auth.getSession().then(session => {
+            updateSlidePanelAuthState(session);
+        });
+
+        // 인증 상태 변경 시 슬라이드 패널도 업데이트
+        Auth.onAuthStateChange((event, session) => {
+            updateSlidePanelAuthState(session);
+        });
+    }
+
     console.log('📋 Profile modals initialized with DB connection');
+    console.log('📱 Slide-out panel initialized');
 });
