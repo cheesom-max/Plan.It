@@ -20,13 +20,11 @@
     <nav class="navbar">
         <div class="nav-container">
             <a href="index.html" class="logo">
-                <span class="logo-icon">✈️</span>
                 <span class="logo-text">Plan.It</span>
             </a>
             <!-- 로그인 전: 로그인/회원가입 버튼 -->
             <div class="auth-buttons" id="authButtons">
                 <button class="login-btn" id="loginBtn">
-                    <span class="btn-icon">👤</span>
                     로그인
                 </button>
                 <button class="signup-btn" id="signupBtn">
@@ -36,20 +34,20 @@
             <!-- 로그인 후: 사용자 프로필 (기본 숨김) -->
             <div class="user-profile" id="userProfile" style="display: none;">
                 <button class="profile-btn" id="profileBtn">
-                    <span class="profile-avatar">👤</span>
+                    <span class="profile-avatar-circle"></span>
                     <span class="profile-email" id="profileEmail">user@email.com</span>
                     <span class="profile-arrow">▼</span>
                 </button>
                 <div class="profile-dropdown" id="profileDropdown">
                     <a href="profile.html" class="dropdown-item" id="myInfoBtn">
-                        <span>👤</span> 내 정보
+                        내 정보
                     </a>
                     <button class="dropdown-item" id="myTripsBtn">
-                        <span>✈️</span> 내 여행
+                        내 여행
                     </button>
                     <div class="dropdown-divider"></div>
                     <button class="dropdown-item" id="logoutBtn">
-                        <span>🚪</span> 로그아웃
+                        로그아웃
                     </button>
                 </div>
             </div>
@@ -97,7 +95,6 @@
                         <input type="date" id="heroEndDate" class="hero-search-input">
                     </div>
                     <button type="button" class="hero-search-btn" id="heroSearchBtn">
-                        <span class="search-btn-icon">🔍</span>
                         <span class="search-btn-text">내 여행 계획 받기</span>
                     </button>
                 </form>
@@ -113,7 +110,7 @@
     <section class="travel-form-section" id="travelForm">
         <div class="form-container">
             <div class="form-header">
-                <span class="form-badge">✨ AI 맞춤 설계</span>
+                <span class="form-badge">AI 맞춤 설계</span>
                 <h2 class="form-title">나만의 여행 계획 시작하기</h2>
                 <p class="form-subtitle">아래 정보를 입력하시면 AI가 최적의 일정을 설계해드립니다</p>
             </div>
@@ -398,12 +395,11 @@
     <div class="modal-overlay" id="myTripsModalOverlay">
         <div class="modal-content modal-large">
             <button class="modal-close" id="myTripsModalClose">✕</button>
-            <h2 class="modal-title">✈️ 내 여행</h2>
+            <h2 class="modal-title">내 여행</h2>
             <div class="my-trips-content">
                 <div class="trips-list" id="tripsList">
                     <!-- 여행 목록이 동적으로 추가됨 -->
                     <div class="trips-empty" id="tripsEmpty">
-                        <span class="empty-icon">🗺️</span>
                         <p>아직 저장된 여행이 없습니다.</p>
                         <p class="empty-hint">새로운 여행을 계획해보세요!</p>
                     </div>
@@ -419,29 +415,52 @@
             <button class="slide-panel-close" id="slidePanelClose" aria-label="닫기">×</button>
         </div>
         <div class="slide-panel-content">
-            <!-- 로그인 전 메뉴 -->
+            <!-- 로그인 전: 로그인/회원가입 버튼 -->
             <div class="slide-panel-section" id="slidePanelGuest">
                 <button class="slide-menu-item highlight" id="slidePanelLoginBtn">로그인 / 회원가입</button>
             </div>
-            <!-- 로그인 후 메뉴 -->
+
+            <!-- 로그인 후: 사용자 정보 -->
             <div class="slide-panel-section" id="slidePanelUser" style="display: none;">
-                <div class="slide-menu-item" style="font-weight: 600; color: #868e96;">
+                <div class="slide-user-info">
+                    <div class="user-avatar"></div>
                     <span id="slidePanelUserEmail">사용자 이메일</span>
                 </div>
             </div>
+
+            <!-- 공통 메뉴 (로그인 여부 무관) -->
             <div class="slide-panel-section">
+                <div class="slide-section-title">여행 서비스</div>
+                <a href="#travel-form-section" class="slide-menu-item" id="slidePanelCreateBtn">
+                    <span>AI 맞춤 일정 만들기</span>
+                    <span class="menu-arrow">→</span>
+                </a>
+                <button class="slide-menu-item" id="slidePanelBudgetBtn">
+                    <span>여행 견적내기</span>
+                    <span class="menu-arrow">→</span>
+                </button>
+            </div>
+
+            <!-- 로그인 필수 메뉴 -->
+            <div class="slide-panel-section" id="slidePanelAuthRequired" style="display: none;">
+                <div class="slide-section-title">내 계정</div>
                 <button class="slide-menu-item" id="slidePanelMyTripsBtn">
                     <span>내 여행</span>
                     <span class="menu-arrow">→</span>
                 </button>
-                <a href="#travel-form-section" class="slide-menu-item primary">
-                    <span>AI 맞춤 일정 만들기</span>
-                    <span class="menu-arrow">→</span>
-                </a>
-                <a href="profile.html" class="slide-menu-item" id="slidePanelProfileBtn" style="display: none;">
+                <a href="profile.html" class="slide-menu-item" id="slidePanelProfileBtn">
                     <span>내 정보</span>
                     <span class="menu-arrow">→</span>
                 </a>
+            </div>
+
+            <!-- 기타 (공통) -->
+            <div class="slide-panel-section">
+                <div class="slide-section-title">기타</div>
+                <button class="slide-menu-item" id="slidePanelSettingsBtn">
+                    <span>설정</span>
+                    <span class="menu-arrow">→</span>
+                </button>
             </div>
         </div>
         <div class="slide-panel-footer" id="slidePanelFooter" style="display: none;">

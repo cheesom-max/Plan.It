@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (cities.length > 0) {
                 heroSuggestions.innerHTML = cities.map(city => `
                     <div class="suggestion-item" data-name="${city.name}" data-country="${city.country}">
-                        <span class="suggestion-icon">📍</span>
+                        <span class="suggestion-icon"></span>
                         <span class="suggestion-text">
                             <span class="suggestion-name">${city.name}</span>
                             <span class="suggestion-country">${city.country}</span>
@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 // 검색 결과 없을 때 직접 입력 허용
                 heroSuggestions.innerHTML = `
                     <div class="suggestion-item" data-name="${query}" data-country="">
-                        <span class="suggestion-icon">✏️</span>
+                        <span class="suggestion-icon"></span>
                         <span class="suggestion-text">
                             <span class="suggestion-name">"${query}" 직접 입력</span>
                         </span>
@@ -262,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // 유효성 검사
             if (!destination) {
-                showNotification('📍 여행지를 입력해주세요!');
+                showNotification('여행지를 입력해주세요.');
                 heroDestination?.focus();
                 return;
             }
@@ -380,7 +380,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const notification = document.createElement('div');
         notification.className = 'notification';
         notification.innerHTML = `
-            <span class="notification-icon">✨</span>
+            <span class="notification-icon"></span>
             <span class="notification-text">${message}</span>
         `;
 
@@ -484,7 +484,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (cities.length > 0) {
             suggestionsEl.innerHTML = cities.map(city => `
                 <div class="suggestion-item" data-name="${city.name}" data-country="${city.country}">
-                    <span class="suggestion-icon">📍</span>
+                    <span class="suggestion-icon"></span>
                     <span class="suggestion-text">
                         <span class="suggestion-name">${city.name}</span>
                         <span class="suggestion-country">${city.country}</span>
@@ -496,7 +496,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // 검색 결과 없을 때 직접 입력 허용
             suggestionsEl.innerHTML = `
                 <div class="suggestion-item" data-name="${query}" data-country="">
-                    <span class="suggestion-icon">✏️</span>
+                    <span class="suggestion-icon"></span>
                     <span class="suggestion-text">
                         <span class="suggestion-name">"${query}" 직접 입력</span>
                     </span>
@@ -546,7 +546,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function addDestination() {
         const items = destinationsContainer.querySelectorAll('.destination-item');
         if (items.length >= MAX_DESTINATIONS) {
-            showNotification(`⚠️ 최대 ${MAX_DESTINATIONS}개의 여행지만 추가할 수 있습니다.`);
+            showNotification(`최대 ${MAX_DESTINATIONS}개의 여행지만 추가할 수 있습니다.`);
             return;
         }
 
@@ -559,7 +559,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <div class="search-input-wrapper">
                 <input type="text" class="form-input search-input destination-input" 
                     placeholder="도시 또는 국가를 검색하세요" autocomplete="off" data-index="${newIndex}">
-                <span class="search-icon">🔍</span>
+                <span class="search-icon"></span>
                 <div class="search-suggestions"></div>
             </div>
             <button type="button" class="remove-destination-btn" title="삭제">
@@ -644,7 +644,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (tags.length > 1) {
             selectedDestinations.innerHTML = `
-                <span style="color: var(--text-light); font-size: 0.9rem;">📍 여행 경로: </span>
+                <span style="color: var(--text-light); font-size: 0.9rem;">여행 경로: </span>
                 ${tags.join('<span style="color: var(--text-light); margin: 0 0.25rem;">→</span>')}
             `;
         } else {
@@ -723,7 +723,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const tipsEl = document.getElementById('itineraryTips');
 
         // 제목과 요약
-        if (titleEl) titleEl.textContent = `🗺️ ${itinerary.title || '여행 일정'}`;
+        if (titleEl) titleEl.textContent = `${itinerary.title || '여행 일정'}`;
         if (summaryEl) summaryEl.textContent = itinerary.summary || '';
 
         // 일별 일정
@@ -747,7 +747,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // 여행 팁
         if (tipsEl && itinerary.tips && itinerary.tips.length > 0) {
             tipsEl.innerHTML = `
-                <h4>💡 여행 팁</h4>
+                <h4>여행 팁</h4>
                 <ul>
                     ${itinerary.tips.map(tip => `<li>${tip}</li>`).join('')}
                 </ul>
@@ -765,7 +765,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (item.type === 'food' && item.options) {
             return `
                 <div class="schedule-item food-item">
-                    <div class="schedule-time">${item.time} <span class="badge-food">🍽️ ${item.meal_type || '식사'}</span></div>
+                    <div class="schedule-time">${item.time} <span class="badge-food">${item.meal_type || '식사'}</span></div>
                     <div class="schedule-content">
                         <div class="food-options-grid">
                             ${item.options.map((opt, idx) => `
@@ -802,12 +802,12 @@ document.addEventListener('DOMContentLoaded', function () {
     // 활동 타입 라벨
     function getTypeLabel(type) {
         const labels = {
-            food: '🍽️ 맛집',
-            activity: '🏄 액티비티',
-            culture: '🎭 문화',
-            nature: '🌿 자연',
-            shopping: '🛍️ 쇼핑',
-            transport: '🚗 이동'
+            food: '맛집',
+            activity: '액티비티',
+            culture: '문화',
+            nature: '자연',
+            shopping: '쇼핑',
+            transport: '이동'
         };
         return labels[type] || type;
     }
@@ -833,7 +833,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (typeof Auth !== 'undefined') {
                 const session = await Auth.getSession();
                 if (!session?.user) {
-                    showNotification('⚠️ 일정 생성은 로그인 후 이용 가능합니다!');
+                    showNotification('일정 생성은 로그인 후 이용 가능합니다.');
                     openAuthModal('login');
                     return;
                 }
@@ -848,29 +848,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // 유효성 검사
             if (destinations.length === 0) {
-                showNotification('⚠️ 최소 한 개의 여행지를 입력해주세요!');
+                showNotification('최소 한 개의 여행지를 입력해주세요.');
                 return;
             }
 
             if (!startDate || !endDate) {
-                showNotification('⚠️ 여행 날짜를 선택해주세요!');
+                showNotification('여행 날짜를 선택해주세요.');
                 return;
             }
 
             if (!companion) {
-                showNotification('⚠️ 동행자를 선택해주세요!');
+                showNotification('동행자를 선택해주세요.');
                 return;
             }
 
             if (styles.length === 0) {
-                showNotification('⚠️ 최소 한 개의 여행 스타일을 선택해주세요!');
+                showNotification('최소 한 개의 여행 스타일을 선택해주세요.');
                 return;
             }
 
             console.log('📋 여행 계획 데이터:', { destinations, startDate, endDate, companion, styles });
 
             // 로딩 표시
-            showLoading('✨ AI가 맞춤 여행 일정을 생성하고 있습니다...');
+            showLoading('AI가 맞춤 여행 일정을 생성하고 있습니다...');
 
             try {
                 const itinerary = await TravelAPI.generateItinerary({
@@ -1003,7 +1003,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (authModal) {
             authModal.innerHTML = `
                 <div class="email-verification-message">
-                    <div class="verification-icon">✉️</div>
+                    <div class="verification-icon"></div>
                     <h2 class="verification-title">인증 메일을 보냈습니다!</h2>
                     <p class="verification-text">
                         <strong>${email}</strong> 주소로<br>
@@ -1307,7 +1307,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const nickname = nicknameInput?.value?.trim();
 
             if (!nickname) {
-                showNotification('⚠️ 닉네임을 입력해주세요!');
+                showNotification('닉네임을 입력해주세요.');
                 nicknameInput?.focus();
                 return;
             }
@@ -1402,7 +1402,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (tripsEmpty) tripsEmpty.style.display = 'none';
                 tripsList.innerHTML = allTrips.map((trip, index) => `
                     <div class="trip-card" data-index="${index}" data-from-db="${trip.fromDB || false}" data-db-id="${trip.dbTripId || ''}">
-                        <span class="trip-icon">✈️</span>
+                        <span class="trip-icon"></span>
                         <div class="trip-info">
                             <div class="trip-title">${trip.title || trip.destination || '나의 여행'}</div>
                             <div class="trip-dates">${trip.startDate || trip.start_date || ''} ~ ${trip.endDate || trip.end_date || ''}</div>
@@ -1522,6 +1522,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const slidePanelUserEmail = document.getElementById('slidePanelUserEmail');
     const slidePanelProfileBtn = document.getElementById('slidePanelProfileBtn');
     const slidePanelFooter = document.getElementById('slidePanelFooter');
+    const slidePanelBudgetBtn = document.getElementById('slidePanelBudgetBtn');
+    const slidePanelSettingsBtn = document.getElementById('slidePanelSettingsBtn');
+    const slidePanelCreateBtn = document.getElementById('slidePanelCreateBtn');
 
     // 패널 열기/닫기 함수
     function openSlidePanel() {
@@ -1572,7 +1575,7 @@ document.addEventListener('DOMContentLoaded', function () {
             closeSlidePanel();
             if (typeof Auth !== 'undefined') {
                 await Auth.signOut();
-                showNotification('👋 로그아웃되었습니다.');
+                showNotification('로그아웃되었습니다.');
             }
         });
     }
@@ -1589,20 +1592,50 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // 슬라이드 패널 AI 일정 만들기 버튼
+    if (slidePanelCreateBtn) {
+        slidePanelCreateBtn.addEventListener('click', () => {
+            closeSlidePanel();
+            // travel-form 섹션으로 스크롤
+            const travelFormSection = document.getElementById('travel-form-section') || document.getElementById('travelForm');
+            if (travelFormSection) {
+                travelFormSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    }
+
+    // 슬라이드 패널 여행 견적내기 버튼
+    if (slidePanelBudgetBtn) {
+        slidePanelBudgetBtn.addEventListener('click', () => {
+            closeSlidePanel();
+            showNotification('여행 견적 기능은 준비 중입니다.');
+        });
+    }
+
+    // 슬라이드 패널 설정 버튼
+    if (slidePanelSettingsBtn) {
+        slidePanelSettingsBtn.addEventListener('click', () => {
+            closeSlidePanel();
+            showNotification('설정 페이지는 준비 중입니다.');
+        });
+    }
+
     // 로그인 상태에 따른 슬라이드 패널 UI 업데이트 함수
+    const slidePanelAuthRequired = document.getElementById('slidePanelAuthRequired');
+
     function updateSlidePanelAuthState(session) {
         if (session?.user) {
             // 로그인 상태
             if (slidePanelGuest) slidePanelGuest.style.display = 'none';
             if (slidePanelUser) slidePanelUser.style.display = 'block';
             if (slidePanelUserEmail) slidePanelUserEmail.textContent = session.user.email;
-            if (slidePanelProfileBtn) slidePanelProfileBtn.style.display = 'flex';
+            if (slidePanelAuthRequired) slidePanelAuthRequired.style.display = 'block';
             if (slidePanelFooter) slidePanelFooter.style.display = 'block';
         } else {
             // 비로그인 상태
             if (slidePanelGuest) slidePanelGuest.style.display = 'block';
             if (slidePanelUser) slidePanelUser.style.display = 'none';
-            if (slidePanelProfileBtn) slidePanelProfileBtn.style.display = 'none';
+            if (slidePanelAuthRequired) slidePanelAuthRequired.style.display = 'none';
             if (slidePanelFooter) slidePanelFooter.style.display = 'none';
         }
     }
