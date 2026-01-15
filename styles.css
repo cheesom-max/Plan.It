@@ -162,6 +162,7 @@ body {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    margin-left: auto;
 }
 
 /* Profile Avatar Circle (no emoji) */
@@ -1851,6 +1852,7 @@ body {
 /* ===== User Profile Dropdown ===== */
 .user-profile {
     position: relative;
+    margin-left: auto;
 }
 
 .profile-btn {

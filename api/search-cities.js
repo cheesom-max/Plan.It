@@ -1,12 +1,16 @@
 // API: City Search using OpenStreetMap Nominatim
-export default async function handler(req, res) {
-    // CORS 헤더 설정
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+import { setCorsHeaders, errorResponse, ErrorCodes } from '../lib/api-utils.js';
 
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
+export default async function handler(req, res) {
+    // CORS 처리 (preflight면 조기 반환)
+    if (setCorsHeaders(req, res)) {
+        return;
+    }
+
+    if (req.method !== 'GET') {
+        return res.status(405).json(
+            errorResponse(ErrorCodes.METHOD_NOT_ALLOWED, 'GET 요청만 허용됩니다.')
+        );
     }
 
     try {
@@ -41,6 +45,8 @@ export default async function handler(req, res) {
         res.json(cities);
     } catch (error) {
         console.error('City search error:', error);
-        res.status(500).json({ error: 'Failed to search cities' });
+        res.status(500).json(
+            errorResponse(ErrorCodes.INTERNAL_ERROR, '도시 검색에 실패했습니다.')
+        );
     }
 }
