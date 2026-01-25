@@ -82,7 +82,7 @@
                 <div class="flex gap-2">
                     <button id="saveItineraryBtn"
                         class="bg-[#e7edf3] dark:bg-slate-800 text-[#0d141b] dark:text-slate-200 px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-200">저장하기</button>
-                    <button
+                    <button id="shareBtn"
                         class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2">
                         공유하기
                     </button>
@@ -269,101 +269,132 @@
 
             // Save Button Logic
             const saveBtn = document.getElementById('saveItineraryBtn');
-            saveBtn.addEventListener('click', async () => {
-                if (!window.Auth) return;
-                const session = await window.Auth.getSession();
-                if (!session || !session.user) {
-                    if (confirm('로그인이 필요합니다. 로그인하시겠습니까?')) {
-                        window.location.href = 'index.html?action=login'; // Auth logic in index handles parameter? or show modal
+            if (saveBtn) {
+                saveBtn.addEventListener('click', async () => {
+                    if (!window.Auth) return;
+                    const session = await window.Auth.getSession();
+                    if (!session || !session.user) {
+                        if (confirm('로그인이 필요합니다. 로그인하시겠습니까?')) {
+                            // Trigger Login Modal
+                            const loginBtn = document.getElementById('loginBtn');
+                            if (loginBtn) loginBtn.click();
+                        }
+                        return;
                     }
-                    return;
-                }
 
-                // Save Logic Implementation
-                saveBtn.textContent = '저장 중...';
-                saveBtn.disabled = true;
+                    // Save Logic Implementation
+                    saveBtn.textContent = '저장 중...';
+                    saveBtn.disabled = true;
 
-                try {
-                    const itinerary = JSON.parse(localStorage.getItem('travelItinerary'));
-                    const tripInfo = JSON.parse(localStorage.getItem('tripInfo'));
+                    try {
+                        const itinerary = JSON.parse(localStorage.getItem('travelItinerary'));
+                        const tripInfo = JSON.parse(localStorage.getItem('tripInfo'));
 
-                    if (!itinerary || !tripInfo) throw new Error('저장할 일정 데이터가 없습니다.');
+                        if (!itinerary || !tripInfo) throw new Error('저장할 일정 데이터가 없습니다.');
 
-                    const client = window.supabaseClient;
-                    if (!client) throw new Error('DB 연결 오류');
+                        const client = window.supabaseClient;
+                        if (!client) throw new Error('DB 연결 오류');
 
-                    // 1. Insert Trip
-                    const { data: tripData, error: tripError } = await client
-                        .from('trips')
-                        .insert({
-                            user_id: session.user.id,
-                            title: itinerary.title || `${tripInfo.destinations[0]} 여행`,
-                            destination: tripInfo.destinations.join(', '),
-                            start_date: tripInfo.startDate,
-                            end_date: tripInfo.endDate,
-                            companion_type: tripInfo.companion === 'friends' ? 'friends' :
-                                tripInfo.companion === 'couple' ? 'couple' :
-                                    tripInfo.companion === 'family' ? 'family' : 'alone',
-                            travel_style: tripInfo.styles,
-                            // budget_level mapping needs to be handled if DB requires specific enum, assuming text for now or mapped previously
-                            budget_level: 'mid' // Default or map from tripInfo if available
-                        })
-                        .select()
-                        .single();
+                        // 1. Insert Trip
+                        const { data: tripData, error: tripError } = await client
+                            .from('trips')
+                            .insert({
+                                user_id: session.user.id,
+                                title: itinerary.tripTitle || itinerary.title || `${tripInfo.destinations[0]} 여행`,
+                                destination: tripInfo.destinations.join(', '),
+                                start_date: tripInfo.startDate,
+                                end_date: tripInfo.endDate,
+                                companion_type: tripInfo.companion,
+                                travel_style: tripInfo.styles,
+                                budget_level: 'mid'
+                            })
+                            .select()
+                            .single();
 
-                    if (tripError) throw tripError;
+                        if (tripError) throw tripError;
 
-                    const tripId = tripData.id;
+                        const tripId = tripData.id;
 
-                    // 2. Insert Days & Items
-                    if (itinerary.days && itinerary.days.length > 0) {
-                        for (const day of itinerary.days) {
-                            // Insert Day
-                            const { data: dayData, error: dayError } = await client
-                                .from('trip_days')
-                                .insert({
-                                    trip_id: tripId,
-                                    day_number: day.day,
-                                    date: day.date,
-                                    title: day.theme,
-                                    summary: day.day_theme
-                                })
-                                .select()
-                                .single();
+                        // 2. Insert Days & Items
+                        if (itinerary.days && itinerary.days.length > 0) {
+                            for (const day of itinerary.days) {
+                                // Insert Day
+                                const { data: dayData, error: dayError } = await client
+                                    .from('trip_days')
+                                    .insert({
+                                        trip_id: tripId,
+                                        day_number: day.day,
+                                        date: day.date,
+                                        title: day.theme,
+                                        summary: day.day_theme
+                                    })
+                                    .select()
+                                    .single();
 
-                            if (dayError) throw dayError;
+                                if (dayError) throw dayError;
 
-                            // Insert Items
-                            if (day.schedule && day.schedule.length > 0) {
-                                const itemsPayload = day.schedule.map(item => ({
-                                    trip_day_id: dayData.id,
-                                    place_name: item.place?.name_ko || item.place || item.activity, // Handle various formats
-                                    category: item.category,
-                                    description: item.description,
-                                    address: item.place?.address || '',
-                                    duration_minutes: 60, // Default or parse from item.duration
-                                    image_url: '' // Future enhancement
-                                }));
+                                // Insert Items
+                                if (day.schedule && day.schedule.length > 0) {
+                                    const itemsPayload = day.schedule.map(item => {
+                                        // Safe extraction of place name
+                                        const placeName = typeof item.place === 'object' ? (item.place.name || item.place.name_ko || item.activity || '장소') : (item.place || item.activity || '장소');
+                                        return {
+                                            trip_day_id: dayData.id,
+                                            place_name: placeName,
+                                            category: item.category,
+                                            description: item.description,
+                                            address: (typeof item.place === 'object' ? item.place.address : '') || '',
+                                            duration_minutes: 60
+                                        };
+                                    });
 
-                                const { error: itemsError } = await client
-                                    .from('trip_items')
-                                    .insert(itemsPayload);
+                                    const { error: itemsError } = await client
+                                        .from('trip_items')
+                                        .insert(itemsPayload);
 
-                                if (itemsError) throw itemsError;
+                                    if (itemsError) throw itemsError;
+                                }
                             }
                         }
+
+                        saveBtn.textContent = '저장 완료!';
+                        alert('일정이 성공적으로 저장되었습니다!');
+
+                        // Update URL with Trip ID to enable sharing
+                        const newUrl = new URL(window.location.href);
+                        newUrl.searchParams.set('tripId', tripId);
+                        window.history.pushState({}, '', newUrl);
+
+                    } catch (err) {
+                        console.error('Save failed:', err);
+                        alert('저장 실패: ' + err.message);
+                        saveBtn.textContent = '저장하기';
+                        saveBtn.disabled = false;
+                    }
+                });
+            }
+
+            // Share Button Logic
+            const shareBtn = document.getElementById('shareBtn');
+            if (shareBtn) {
+                shareBtn.addEventListener('click', () => {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const tripId = urlParams.get('tripId');
+
+                    if (!tripId) {
+                        alert('먼저 일정을 저장해야 공유할 수 있습니다.');
+                        return;
                     }
 
-                    saveBtn.textContent = '저장 완료!';
-                    alert('일정이 성공적으로 저장되었습니다!');
-
-                } catch (err) {
-                    console.error('Save failed:', err);
-                    alert('저장 실패: ' + err.message);
-                    saveBtn.textContent = '저장하기';
-                    saveBtn.disabled = false;
-                }
-            });
+                    const shareUrl = window.location.href;
+                    navigator.clipboard.writeText(shareUrl).then(() => {
+                        alert('포스트 링크가 복사되었습니다! 친구들에게 공유해보세요.');
+                    }).catch(err => {
+                        console.error('Clipboard failed', err);
+                        prompt('이 링크를 복사해서 공유하세요:', shareUrl);
+                    });
+                });
+            }
         });
 
         function renderItinerary(data) {
@@ -419,6 +450,10 @@
                     // Activities
                     if (Array.isArray(day.schedule)) {
                         day.schedule.forEach(item => {
+                            // Fix: Handle [object Object] rendering
+                            const placeName = typeof item.place === 'object' ? (item.place.name || item.place.name_ko || item.activity || '장소명 없음') : (item.place || item.activity || '장소명 없음');
+                            const timeStr = item.time || '';
+
                             const card = document.createElement('div');
                             card.className = 'relative pb-10 group';
                             card.innerHTML = `
@@ -436,9 +471,9 @@
                                               <div class="w-full sm:w-2/3 p-5 flex flex-col justify-between">
                                                    <div>
                                                        <div class="flex items-center justify-between mb-1">
-                                                           <p class="text-xs font-bold text-primary tracking-widest uppercase">${item.time || '시간 미정'}</p>
+                                                           <p class="text-xs font-bold text-primary tracking-widest uppercase">${timeStr}</p>
                                                        </div>
-                                                       <h3 class="text-xl font-bold mb-2">${item.place || item.activity}</h3>
+                                                       <h3 class="text-xl font-bold mb-2">${placeName}</h3>
                                                        <p class="text-sm text-[#4c739a] line-clamp-3 leading-relaxed">${item.description}</p>
                                                    </div>
                                               </div>
