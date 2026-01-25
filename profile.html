@@ -76,9 +76,17 @@
                         <span class="material-symbols-outlined text-lg">add</span>
                         <span>새 일정 만들기</span>
                     </button>
-                    <div id="userProfileAvatar"
-                        class="h-10 w-10 rounded-full border-2 border-primary/20 bg-cover bg-center"
-                        style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBn3wwj3eLiQS0rX0RyJqlrRgIu85slvfeMaeZrr1wknwPPSSMPIg1lSgQuh6Wr9x-w2o-8etpyw6eUqkYsqjWb_1w9cwK7FZkuncyk0FiODFW1xmvUsqApDbVLrBT_tuwVRkMIwWMogLRpyHip7aSl7LDgp7RNZtFkaoiWi571NsiJXMcUg7S5alPgEBoNNgWYN9qhSDt9PSEy4Tn-Tsd5XQY1T1tNdMDtG0GHj3loX1alQ-LPATsYQedMJmKY57cs_lUCEo_Nx-I')">
+
+                    <!-- Auth UI -->
+                    <div id="authButtons">
+                        <button id="loginBtn" class="text-sm font-bold text-gray-700 hover:text-primary">로그인</button>
+                    </div>
+                    <div id="userProfile" style="display: none;" class="flex items-center gap-3">
+                        <div id="userAvatar"
+                            class="w-10 h-10 rounded-full border-2 border-primary/20 bg-cover bg-center user-avatar-display"
+                            style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBn3wwj3eLiQS0rX0RyJqlrRgIu85slvfeMaeZrr1wknwPPSSMPIg1lSgQuh6Wr9x-w2o-8etpyw6eUqkYsqjWb_1w9cwK7FZkuncyk0FiODFW1xmvUsqApDbVLrBT_tuwVRkMIwWMogLRpyHip7aSl7LDgp7RNZtFkaoiWi571NsiJXMcUg7S5alPgEBoNNgWYN9qhSDt9PSEy4Tn-Tsd5XQY1T1tNdMDtG0GHj3loX1alQ-LPATsYQedMJmKY57cs_lUCEo_Nx-I')">
+                        </div>
+                        <button id="logoutBtn" class="text-sm text-gray-500 hover:text-primary">로그아웃</button>
                     </div>
                 </div>
             </div>
