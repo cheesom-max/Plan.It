@@ -859,8 +859,11 @@ if (travelPlanForm) {
             const hasCredits = await window.Credits.hasEnoughCredits(1);
             if (!hasCredits) {
                 const balance = await window.Credits.getCurrentBalance();
-                showNotification(`크레딧이 부족합니다. (현재 잔액: ${balance} 크레딧)\n크레딧을 충전해주세요.`);
-                // 크레딧 구매 모달/페이지로 이동 (추후 구현)
+                showNotification(`크레딧이 부족합니다. (현재 잔액: ${balance} 크레딧)`);
+                // 크레딧 구매 모달 열기
+                if (window.openCreditsModal) {
+                    window.openCreditsModal();
+                }
                 return;
             }
         }
@@ -923,6 +926,10 @@ if (travelPlanForm) {
                     const balance = await window.Credits.getCurrentBalance();
                     const creditsBalanceEl = document.getElementById('creditsBalance');
                     if (creditsBalanceEl) creditsBalanceEl.textContent = balance.toLocaleString();
+                }
+                // 크레딧 구매 모달 열기
+                if (window.openCreditsModal) {
+                    window.openCreditsModal();
                 }
             } else if (error.code === 'UNAUTHORIZED' || error.status === 401) {
                 showNotification('로그인이 필요합니다.');
