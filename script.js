@@ -254,40 +254,6 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
 
-        // Hero 검색 버튼 클릭 - 메인 폼으로 데이터 동기화
-        if (heroSearchBtn) {
-
-            // 메인 폼 요소 찾기 및 데이터 동기화
-            const mainDestInput = destinationsContainer?.querySelector('.destination-input');
-            if (mainDestInput) {
-                mainDestInput.value = destination;
-                mainDestInput.dataset.name = destination;
-            }
-
-            // [Fix] Hero 날짜 → 메인 폼 날짜 동기화
-            const mainStartDate = document.getElementById('startDate');
-            const mainEndDate = document.getElementById('endDate');
-            if (startDate && mainStartDate) {
-                mainStartDate.value = startDate;
-            }
-            if (endDate && mainEndDate) {
-                mainEndDate.value = endDate;
-            }
-
-            // 알림
-            if (!startDate || !endDate) {
-                showNotification('📅 날짜를 선택하시면 더 정확한 일정을 받을 수 있어요!');
-            } else {
-                showNotification('✅ 상세 옵션을 선택한 후 일정을 생성하세요!');
-            }
-
-            // 메인 폼 섹션으로 스크롤
-            const formSection = document.querySelector('.travel-form-section');
-            if (formSection) {
-                formSection.scrollIntoView({ behavior: 'smooth' });
-            }
-        });
-        }
     }
 
 // ===== Navigation Scroll Effect =====
@@ -879,6 +845,26 @@ if (travelPlanForm) {
 
         console.log('📋 여행 계획 데이터:', { destinations, startDate, endDate, companion, styles });
 
+        // 로그인 확인
+        const session = await window.Auth?.getSession();
+        if (!session?.user) {
+            showNotification('로그인이 필요합니다. 로그인 후 다시 시도해주세요.');
+            // 로그인 모달 열기
+            if (window.openAuthModal) window.openAuthModal();
+            return;
+        }
+
+        // 크레딧 잔액 확인
+        if (window.Credits) {
+            const hasCredits = await window.Credits.hasEnoughCredits(1);
+            if (!hasCredits) {
+                const balance = await window.Credits.getCurrentBalance();
+                showNotification(`크레딧이 부족합니다. (현재 잔액: ${balance} 크레딧)\n크레딧을 충전해주세요.`);
+                // 크레딧 구매 모달/페이지로 이동 (추후 구현)
+                return;
+            }
+        }
+
         // 로딩 표시
         showLoading('AI가 맞춤 여행 일정을 생성하고 있습니다...');
 
@@ -927,7 +913,23 @@ if (travelPlanForm) {
         } catch (error) {
             hideLoading();
             console.error('Itinerary generation error:', error);
-            showNotification('❌ 일정 생성에 실패했습니다. 다시 시도해주세요.');
+
+            // 에러 코드별 처리
+            if (error.code === 'INSUFFICIENT_CREDITS') {
+                showNotification('크레딧이 부족합니다. 크레딧을 충전해주세요.');
+                // 크레딧 잔액 새로고침
+                if (window.Credits) {
+                    window.Credits.clearCache();
+                    const balance = await window.Credits.getCurrentBalance();
+                    const creditsBalanceEl = document.getElementById('creditsBalance');
+                    if (creditsBalanceEl) creditsBalanceEl.textContent = balance.toLocaleString();
+                }
+            } else if (error.code === 'UNAUTHORIZED' || error.status === 401) {
+                showNotification('로그인이 필요합니다.');
+                if (window.openAuthModal) window.openAuthModal();
+            } else {
+                showNotification('❌ 일정 생성에 실패했습니다. 다시 시도해주세요.');
+            }
         }
     });
 }

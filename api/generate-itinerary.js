@@ -1,6 +1,10 @@
 // API: Generate Itinerary using Gemini AI
 import { setCorsHeaders, errorResponse, ErrorCodes } from '../lib/api-utils.js';
 import { generateItineraryPrompt, stylesToText, destinationsToText } from '../lib/prompts.js';
+import { getUserIdFromAuth, getUserCredits, useCredits } from '../lib/supabase-admin.js';
+
+// 여행 계획 1회 생성에 필요한 크레딧
+const CREDITS_PER_GENERATION = 1;
 
 export default async function handler(req, res) {
   // CORS 처리 (preflight면 조기 반환)
@@ -17,6 +21,32 @@ export default async function handler(req, res) {
   try {
     const { destinations, startDate, endDate, companion, styles } = req.body;
     const GEMINI_API_KEY = process.env.GOOGLE_API_KEY;
+
+    // ========================================
+    // 크레딧 시스템: 인증 및 잔액 확인
+    // ========================================
+    const userId = await getUserIdFromAuth(req.headers.authorization);
+
+    if (!userId) {
+      return res.status(401).json(
+        errorResponse(ErrorCodes.UNAUTHORIZED, '로그인이 필요합니다.')
+      );
+    }
+
+    // 크레딧 잔액 확인
+    const credits = await getUserCredits(userId);
+    const currentBalance = credits?.balance || 0;
+
+    if (currentBalance < CREDITS_PER_GENERATION) {
+      return res.status(402).json(
+        errorResponse(
+          ErrorCodes.INSUFFICIENT_CREDITS,
+          `크레딧이 부족합니다. 현재 잔액: ${currentBalance} 크레딧`,
+          { balance: currentBalance, required: CREDITS_PER_GENERATION }
+        )
+      );
+    }
+    // ========================================
 
     if (!GEMINI_API_KEY) {
       return res.status(500).json(
@@ -56,7 +86,7 @@ export default async function handler(req, res) {
 
     // Gemini API 호출
     const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: 'POST',
         headers: {
@@ -92,22 +122,59 @@ export default async function handler(req, res) {
       );
     }
 
-    // JSON 파싱 (코드 블록 제거)
+    // Improved JSON extraction: handle markdown fences and use balanced braces
     let itinerary;
     try {
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        itinerary = JSON.parse(jsonMatch[0]);
-      } else {
-        throw new Error('No JSON found in response');
+      // Strip any markdown code fences (``` or ```json) and surrounding whitespace
+      let clean = responseText.trim();
+      clean = clean.replace(/```(?:json)?\s*\n?/gi, '').replace(/\n?```\s*$/gi, '');
+
+      // Find the first opening brace and locate the matching closing brace
+      const startIdx = clean.indexOf('{');
+      if (startIdx === -1) throw new Error('No opening brace found in AI response');
+      let depth = 0;
+      let endIdx = -1;
+      for (let i = startIdx; i < clean.length; i++) {
+        if (clean[i] === '{') depth++;
+        else if (clean[i] === '}') depth--;
+        if (depth === 0) { endIdx = i + 1; break; }
       }
+      if (endIdx === -1) throw new Error('No matching closing brace found');
+      const jsonStr = clean.slice(startIdx, endIdx);
+      itinerary = JSON.parse(jsonStr);
+      console.log('✅ Successfully parsed itinerary JSON (balanced braces)');
+
+      // ========================================
+      // 크레딧 차감 (성공 시에만)
+      // ========================================
+      const creditResult = await useCredits(
+        userId,
+        CREDITS_PER_GENERATION,
+        `여행 계획 생성: ${destinations[0]?.name || '여행'}`,
+        null  // trip_id가 있으면 여기에 전달
+      );
+
+      if (!creditResult.success) {
+        console.error('❌ 크레딧 차감 실패:', creditResult.message);
+        // 크레딧 차감 실패해도 일정은 반환 (서비스 품질 유지)
+      } else {
+        console.log(`💳 크레딧 차감: -${CREDITS_PER_GENERATION}, 새 잔액: ${creditResult.newBalance}`);
+        // 응답에 새 잔액 포함
+        itinerary._credits = {
+          used: CREDITS_PER_GENERATION,
+          remaining: creditResult.newBalance
+        };
+      }
+      // ========================================
+
     } catch (parseError) {
-      console.error('JSON parse error:', parseError);
-      // 파싱 실패 시 원본 텍스트 반환
-      return res.json({
-        title: '여행 일정',
-        rawText: responseText
-      });
+      console.error('❌ JSON parse error:', parseError);
+      console.error('📄 Raw response preview:', responseText.substring(0, 500));
+
+      // Return error response instead of raw text
+      return res.status(500).json(
+        errorResponse(ErrorCodes.PARSE_ERROR, 'AI 응답을 처리할 수 없습니다. 잠시 후 다시 시도해주세요.')
+      );
     }
 
     res.json(itinerary);

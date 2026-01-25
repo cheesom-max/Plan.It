@@ -2,7 +2,7 @@
     "version": 2,
     "builds": [
         {
-            "src": "api/*.js",
+            "src": "api/**/*.js",
             "use": "@vercel/node"
         },
         {
@@ -30,6 +30,14 @@
         {
             "src": "/api/generate-itinerary",
             "dest": "/api/generate-itinerary.js"
+        },
+        {
+            "src": "/api/credits",
+            "dest": "/api/credits.js"
+        },
+        {
+            "src": "/api/webhook/latpeed",
+            "dest": "/api/webhook/latpeed.js"
         },
         {
             "src": "/(.*\\.css)",

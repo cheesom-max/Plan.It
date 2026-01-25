@@ -92,6 +92,10 @@
                     <!-- <button class="bg-primary text-white px-6 py-2.5 rounded-lg text-sm font-bold shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all">시작하기</button> -->
                 </div>
                 <div id="userProfile" style="display: none;" class="flex items-center gap-3">
+                    <a href="#credits" id="creditsDisplay" class="flex items-center gap-1 px-3 py-1.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full text-sm font-semibold hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors">
+                        <span class="material-symbols-outlined text-base">toll</span>
+                        <span id="creditsBalance">-</span>
+                    </a>
                     <span id="profileEmail" class="text-sm font-bold"></span>
                     <button id="logoutBtn" class="text-sm text-slate-500 hover:text-primary">로그아웃</button>
                 </div>
@@ -341,6 +345,7 @@
     <script src="supabase.js"></script>
     <script src="auth.js"></script>
     <script src="auth-ui.js"></script>
+    <script src="credits.js"></script>
     <script>
         // Inline script cleaned up. Logic moved to script.js and auth-ui.js
         console.log('VoyageAI Initialized');

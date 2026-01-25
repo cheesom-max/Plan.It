@@ -84,6 +84,10 @@
                                 class="text-sm font-bold text-gray-700 hover:text-primary">로그인</button>
                         </div>
                         <div id="userProfile" style="display: none;" class="flex items-center gap-3">
+                            <a href="#credits" id="creditsDisplay" class="flex items-center gap-1 px-3 py-1.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full text-sm font-semibold hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors">
+                                <span class="material-symbols-outlined text-base">toll</span>
+                                <span id="creditsBalance">-</span>
+                            </a>
                             <div id="userAvatar" class="w-8 h-8 rounded-full bg-gray-200 bg-cover bg-center"></div>
                             <button id="logoutBtn" class="text-sm text-gray-500 hover:text-primary">로그아웃</button>
                         </div>
@@ -254,9 +258,8 @@
     <!-- Scripts -->
     <script src="supabase.js"></script>
     <script src="auth.js"></script>
-    <script src="auth.js"></script>
     <script src="auth-ui.js"></script>
-    <script src="api/generate-itinerary.js"></script>
+    <script src="credits.js"></script>
     <!-- NOTE: This is likely server side, but we need client side logic here -->
 
     <script>

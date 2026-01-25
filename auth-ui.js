@@ -67,9 +67,29 @@ document.addEventListener('DOMContentLoaded', function () {
                     el.style.backgroundColor = '#e2e8f0'; // Default gray
                 }
             });
+            // 크레딧 잔액 업데이트
+            updateCreditsDisplay();
         } else {
             authContainers.forEach(el => el.style.display = 'block');
             profileContainers.forEach(el => el.style.display = 'none');
+            // 로그아웃 시 크레딧 캐시 초기화
+            if (window.Credits) {
+                window.Credits.clearCache();
+            }
+        }
+    }
+
+    // 크레딧 잔액 표시 업데이트
+    async function updateCreditsDisplay() {
+        const creditsBalanceEl = document.getElementById('creditsBalance');
+        if (!creditsBalanceEl || !window.Credits) return;
+
+        try {
+            const balance = await window.Credits.getCurrentBalance();
+            creditsBalanceEl.textContent = balance.toLocaleString();
+        } catch (error) {
+            console.error('크레딧 잔액 표시 오류:', error);
+            creditsBalanceEl.textContent = '-';
         }
     }
 
