@@ -153,8 +153,92 @@
     <script src="auth.js"></script>
     <script src="auth-ui.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Load Itinerary Data
+        document.addEventListener('DOMContentLoaded', async function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tripId = urlParams.get('tripId');
+
+            // Case 1: Load from DB (View Saved Trip)
+            if (tripId) {
+                try {
+                    const client = window.supabaseClient;
+                    // 1. Fetch Trip details
+                    const { data: trip, error: tripError } = await client
+                        .from('trips')
+                        .select('*, trip_days(*, trip_items(*))') // Attempt nested fetch
+                        .eq('id', tripId)
+                        .single();
+
+                    // If nested fetch fails or returns weird structure (sometimes happens if FK not detected), 
+                    // we might need manual fetch, but let's try this standard way first.
+                    // If trip_days is missing, fetch it manually.
+
+                    if (tripError) throw tripError;
+
+                    if (!trip.trip_days) {
+                        // Fallback manual fetch if nested didn't work (resilience)
+                        const { data: days } = await client.from('trip_days').select('*').eq('trip_id', tripId).order('day_number', { ascending: true });
+                        trip.trip_days = days || [];
+                        for (const day of trip.trip_days) {
+                            const { data: items } = await client.from('trip_items').select('*').eq('trip_day_id', day.id).order('id', { ascending: true }); // assuming creation order
+                            day.trip_items = items || [];
+                        }
+                    }
+
+                    // 2. Transform to Itinerary Object Format
+                    // DB Structure: trip -> trip_days -> trip_items
+                    // Target Structure: { title, days: [ { day, date, theme, day_theme, schedule: [ { place, description, category } ] } ] }
+
+                    // Sort days just in case
+                    trip.trip_days.sort((a, b) => a.day_number - b.day_number);
+
+                    const itinerary = {
+                        tripTitle: trip.title,
+                        summary: trip.destination, // Using destination as summary for now
+                        days: trip.trip_days.map(d => ({
+                            day: d.day_number,
+                            date: d.date,
+                            theme: d.title, // 'title' in DB was mapped from 'theme'
+                            day_theme: d.summary, // 'summary' in DB was mapped from 'day_theme'
+                            schedule: (d.trip_items || []).map(item => ({
+                                place: item.place_name,
+                                description: item.description,
+                                category: item.category,
+                                // Extra fields if needed
+                                address: item.address
+                            }))
+                        }))
+                    };
+
+                    renderItinerary(itinerary);
+
+                    // Init Map
+                    const firstDest = trip.destination.split(',')[0].trim();
+                    if (firstDest) {
+                        initMap(firstDest);
+                    }
+
+                    // Update Save Button State (Already Saved)
+                    const saveBtn = document.getElementById('saveItineraryBtn');
+                    if (saveBtn) {
+                        saveBtn.textContent = '저장됨';
+                        saveBtn.disabled = true;
+                        // Maybe allow 'Update' in future?
+                    }
+
+                } catch (err) {
+                    console.error('Failed to load trip from DB:', err);
+                    document.getElementById('itineraryContent').innerHTML = `
+                        <div class="text-center py-20">
+                             <h2 class="text-2xl font-bold mb-2 text-red-500">일정을 불러오지 못했습니다.</h2>
+                             <p class="text-gray-500">${err.message}</p>
+                             <button class="text-primary hover:underline mt-4" onclick="location.href='profile.html'">목록으로 돌아가기</button>
+                        </div>
+                     `;
+                }
+                return;
+            }
+
+            // Case 2: Load from LocalStorage (New Trip)
             const itineraryData = localStorage.getItem('travelItinerary');
             const tripInfo = localStorage.getItem('tripInfo');
 
