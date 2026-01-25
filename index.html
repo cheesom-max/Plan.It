@@ -125,12 +125,16 @@
                             class="hero-suggestions absolute top-full left-0 w-full bg-white dark:bg-slate-800 rounded-xl shadow-xl mt-2 overflow-hidden z-50 hidden">
                         </div>
                     </div>
-                    <div class="flex-1 flex items-center px-4 gap-3 border-r border-slate-100 dark:border-slate-700">
+                    <div
+                        class="flex-[1.5] flex items-center px-4 gap-3 border-r border-slate-100 dark:border-slate-700">
                         <span class="material-symbols-outlined text-slate-400">calendar_month</span>
-                        <input id="heroStartDate" type="date"
-                            class="w-full bg-transparent border-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 py-4" />
-                        <!-- Hidden End Date for compatibility -->
-                        <input id="heroEndDate" type="date" class="hidden" />
+                        <input id="heroStartDate" type="text" onfocus="(this.type='date')" onblur="(this.type='text')"
+                            class="w-full bg-transparent border-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 py-4 text-sm"
+                            placeholder="출발일" />
+                        <span class="text-slate-300">~</span>
+                        <input id="heroEndDate" type="text" onfocus="(this.type='date')" onblur="(this.type='text')"
+                            class="w-full bg-transparent border-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 py-4 text-sm"
+                            placeholder="도착일" />
                     </div>
                     <div class="flex-1 flex items-center px-4 gap-3">
                         <span class="material-symbols-outlined text-slate-400">person</span>

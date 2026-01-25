@@ -266,9 +266,11 @@
             const urlParams = new URLSearchParams(window.location.search);
             const initialDest = urlParams.get('destination');
             const initialDate = urlParams.get('startDate');
+            const initialEndDate = urlParams.get('endDate');
 
             if (initialDest) document.getElementById('destinationInput').value = initialDest;
             if (initialDate) document.getElementById('startDate').value = initialDate;
+            if (initialEndDate) document.getElementById('endDate').value = initialEndDate;
 
             // Interest Cards Selection
             const interestCards = document.querySelectorAll('.style-card');
@@ -322,7 +324,7 @@
                 // Since this is client side, we should call our server endpoint.
 
                 try {
-                    const response = await fetch('http://localhost:3000/api/generate-itinerary', {
+                    const response = await fetch('http://localhost:3001/api/generate-itinerary', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
