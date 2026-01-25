@@ -1,487 +1,353 @@
+<!-- Premium Travel Landing Page -->
 <!DOCTYPE html>
-<html lang="ko">
+<html class="light" lang="ko">
 
 <head>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-KESMY9MVTT"></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
 
-      gtag('config', 'G-KESMY9MVTT');
+        gtag('config', 'G-KESMY9MVTT');
     </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="AI 기반 맞춤형 여행 일정 생성기 - 당신만을 위한 최적의 여행 경로를 AI가 설계합니다">
-    <title>Plan.It - AI 맞춤형 여행 일정 생성기</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>VoyageAI - 프리미엄 여행 랜딩 페이지</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&amp;display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Pretendard", "sans-serif"],
+                        "logo": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .glass-nav {
+            backdrop-filter: blur(12px);
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+
+        .dark .glass-nav {
+            background-color: rgba(16, 25, 34, 0.8);
+        }
+    </style>
     <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
-<body>
-    <!-- Navigation Bar -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="index.html" class="logo">
-                <span class="logo-text">Plan.It</span>
-            </a>
-            <!-- 로그인 전: 로그인/회원가입 버튼 -->
-            <div class="auth-buttons" id="authButtons">
-                <button class="login-btn" id="loginBtn">
-                    로그인
-                </button>
-                <button class="signup-btn" id="signupBtn">
-                    회원가입
-                </button>
+<body
+    class="bg-background-light dark:bg-background-dark font-display text-[#0d141b] dark:text-slate-50 min-h-screen overflow-x-hidden">
+    <header
+        class="fixed top-0 left-0 right-0 z-50 glass-nav border-b border-slate-200 dark:border-slate-800 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="text-primary size-8">
+                    <svg fill="currentColor" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M44 11.2727C44 14.0109 39.8386 16.3957 33.69 17.6364C39.8386 18.877 44 21.2618 44 24C44 26.7382 39.8386 29.123 33.69 30.3636C39.8386 31.6043 44 33.9891 44 36.7273C44 40.7439 35.0457 44 24 44C12.9543 44 4 40.7439 4 36.7273C4 33.9891 8.16144 31.6043 14.31 30.3636C8.16144 29.123 4 26.7382 4 24C4 21.2618 8.16144 18.877 14.31 17.6364C8.16144 16.3957 4 14.0109 4 11.2727C4 7.25611 12.9543 4 24 4C35.0457 4 44 7.25611 44 11.2727Z">
+                        </path>
+                    </svg>
+                </div>
+                <h2 class="text-xl font-bold tracking-tight font-logo">VoyageAI</h2>
             </div>
-            <!-- 로그인 후: 사용자 프로필 (기본 숨김) -->
-            <div class="user-profile" id="userProfile" style="display: none;">
-                <button class="profile-btn" id="profileBtn">
-                    <span class="profile-avatar-circle"></span>
-                    <span class="profile-email" id="profileEmail">user@email.com</span>
-                    <span class="profile-arrow">▼</span>
-                </button>
-                <div class="profile-dropdown" id="profileDropdown">
-                    <a href="profile.html" class="dropdown-item" id="myInfoBtn">
-                        내 정보
-                    </a>
-                    <button class="dropdown-item" id="myTripsBtn">
-                        내 여행
-                    </button>
-                    <div class="dropdown-divider"></div>
-                    <button class="dropdown-item" id="logoutBtn">
-                        로그아웃
+            <nav class="hidden md:flex items-center gap-10">
+                <a class="text-sm font-semibold hover:text-primary transition-colors" href="index.html">홈</a>
+                <a class="text-sm font-semibold hover:text-primary transition-colors" href="create.html">일정 만들기</a>
+                <a class="text-sm font-semibold hover:text-primary transition-colors" href="#">둘러보기</a>
+                <a class="text-sm font-semibold hover:text-primary transition-colors" href="profile.html">내 여행</a>
+            </nav>
+            <div class="flex items-center gap-4">
+                <div id="authButtons">
+                    <button id="loginBtn"
+                        class="hidden sm:block px-5 py-2 text-sm font-bold hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">로그인</button>
+                    <!-- <button class="bg-primary text-white px-6 py-2.5 rounded-lg text-sm font-bold shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all">시작하기</button> -->
+                </div>
+                <div id="userProfile" style="display: none;" class="flex items-center gap-3">
+                    <span id="profileEmail" class="text-sm font-bold"></span>
+                    <button id="logoutBtn" class="text-sm text-slate-500 hover:text-primary">로그아웃</button>
+                </div>
+                <a href="create.html"
+                    class="bg-primary text-white px-6 py-2.5 rounded-lg text-sm font-bold shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all">시작하기</a>
+            </div>
+        </div>
+    </header>
+    <section class="relative pt-20">
+        <div class="w-full h-[640px] relative overflow-hidden">
+            <div class="absolute inset-0 bg-cover bg-center"
+                style='background-image: linear-gradient(rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.5) 100%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuBesLskasPy22pdvClBgHr4y77NH4aHSTshJHNWXkHuat8p__B9rHBedHkmsEY5FnD8bnHoejuDSKtNE6CyrTbhqmkGupg0eTyuLNmQTqh5wIop6ua4oxmKUULaZCjYYSQsOlvBndWV2vKDjoy-s11rAInjY7tPOEowKTtyKv-4iLBvhVlYImPaEl_3flVMOBQmneeLLTWsBE26urFld7bQNpt_TX__iKo_6jom3uL6rK75ifSCIdLaiMzPV52Zp3DCUaFXo-Kfsgw");'>
+            </div>
+            <div class="relative h-full max-w-7xl mx-auto px-6 flex flex-col items-center justify-center text-center">
+                <h1 class="text-white text-4xl md:text-6xl font-bold tracking-tight leading-tight mb-6 max-w-4xl">
+                    AI와 함께 떠나는 <br /><span class="text-blue-400">스마트한 여행 설계.</span>
+                </h1>
+                <p class="text-white/90 text-lg md:text-xl max-w-2xl mb-12 font-medium">
+                    당신의 취향, 예산, 그리고 꿈꾸던 순간을 단 몇 초 만에 완벽한 일정으로 만들어 드립니다.
+                </p>
+                <div
+                    class="w-full max-w-4xl bg-white dark:bg-background-dark p-2 rounded-xl shadow-2xl flex flex-col md:flex-row items-stretch gap-2">
+                    <div class="flex-1 flex items-center px-4 gap-3 border-r border-slate-100 dark:border-slate-800">
+                        <span class="material-symbols-outlined text-slate-400">location_on</span>
+                        <input id="landingDestination"
+                            class="w-full bg-transparent border-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 py-4"
+                            placeholder="어디로 떠나시나요? (예: 산토리니, 교토)" type="text" />
+                    </div>
+                    <div class="flex-1 flex items-center px-4 gap-3 border-r border-slate-100 dark:border-slate-800">
+                        <span class="material-symbols-outlined text-slate-400">calendar_month</span>
+                        <input id="landingStartDate" type="date"
+                            class="w-full bg-transparent border-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 py-4" />
+                    </div>
+                    <div class="flex-1 flex items-center px-4 gap-3">
+                        <span class="material-symbols-outlined text-slate-400">person</span>
+                        <input
+                            class="w-full bg-transparent border-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 py-4"
+                            placeholder="인원수" type="text" />
+                    </div>
+                    <button id="landingGenerateBtn"
+                        class="bg-primary text-white px-8 py-4 rounded-lg font-bold hover:bg-primary/90 transition-all flex items-center justify-center gap-2 whitespace-nowrap">
+                        <span class="material-symbols-outlined">auto_awesome</span>
+                        일정 생성하기
                     </button>
                 </div>
             </div>
-            <!-- Menu Toggle Button (Hamburger) -->
-            <button class="menu-toggle-btn" id="menuToggleBtn" aria-label="메뉴 열기">
-                <span class="menu-toggle-icon">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </span>
-            </button>
-        </div>
-    </nav>
-
-    <!-- Hero Section - Airbnb Style -->
-    <section class="hero hero-airbnb">
-        <div class="hero-overlay"></div>
-        <div class="hero-center-content">
-            <!-- 메인 헤드라인 -->
-            <h1 class="hero-headline">
-                계획 스트레스 없이<br>
-                <span class="headline-accent">설렘만 주는 여행</span>
-            </h1>
-            <p class="hero-tagline">
-                맛집-교통-숙소-동선까지 5분 안에 자동 완성됩니다.
-            </p>
-
-            <!-- 검색 박스 (에어비앤비 스타일) -->
-            <div class="hero-search-box">
-                <form class="hero-search-form" id="heroSearchForm">
-                    <div class="search-field search-field-destination">
-                        <label>여행지가 어디신가요?</label>
-                        <input type="text" id="heroDestination" class="hero-search-input destination-input"
-                            placeholder="여행지 검색" autocomplete="off">
-                        <div class="search-suggestions hero-suggestions"></div>
-                    </div>
-                    <div class="search-divider"></div>
-                    <div class="search-field search-field-date">
-                        <label>언제 출발하세요?</label>
-                        <input type="date" id="heroStartDate" class="hero-search-input">
-                    </div>
-                    <div class="search-divider"></div>
-                    <div class="search-field search-field-date">
-                        <label>언제 돌아오세요?</label>
-                        <input type="date" id="heroEndDate" class="hero-search-input">
-                    </div>
-                    <button type="button" class="hero-search-btn" id="heroSearchBtn">
-                        <span class="search-btn-text">내 여행 계획 받기</span>
-                    </button>
-                </form>
-            </div>
-        </div>
-        <div class="hero-scroll-indicator">
-            <span class="scroll-text">상세 옵션 선택</span>
-            <div class="scroll-arrow">↓</div>
         </div>
     </section>
-
-    <!-- Travel Form Section -->
-    <section class="travel-form-section" id="travelForm">
-        <div class="form-container">
-            <div class="form-header">
-                <span class="form-badge">AI 맞춤 설계</span>
-                <h2 class="form-title">나만의 여행 계획 시작하기</h2>
-                <p class="form-subtitle">아래 정보를 입력하시면 AI가 최적의 일정을 설계해드립니다</p>
+    <section class="py-12 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark">
+        <div class="max-w-7xl mx-auto px-6 flex flex-wrap justify-between items-center gap-8 opacity-70">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">verified</span>
+                <span class="font-bold">5만 명 이상의 여행자가 선택</span>
             </div>
-
-            <form class="travel-form" id="travelPlanForm">
-                <!-- Destination Input - Multiple Destinations -->
-                <div class="form-group">
-                    <label class="form-label">
-                        <span class="label-icon">📍</span>
-                        어디로 떠나시나요?
-                        <span class="label-hint">(최대 5곳까지 추가 가능)</span>
-                    </label>
-
-                    <!-- 여행지 목록 컨테이너 -->
-                    <div class="destinations-container" id="destinationsContainer">
-                        <!-- 첫 번째 여행지 (기본) -->
-                        <div class="destination-item" data-index="0">
-                            <div class="destination-number">1</div>
-                            <div class="search-input-wrapper">
-                                <input type="text" class="form-input search-input destination-input"
-                                    placeholder="도시 또는 국가를 검색하세요" autocomplete="off" data-index="0">
-                                <span class="search-icon">🔍</span>
-                                <div class="search-suggestions">
-                                    <!-- 동적으로 검색 결과 표시 -->
-                                </div>
-                            </div>
-                            <button type="button" class="remove-destination-btn" title="삭제" style="visibility: hidden;">
-                                <span>✕</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- 여행지 추가 버튼 -->
-                    <button type="button" class="add-destination-btn" id="addDestinationBtn">
-                        <span class="add-icon">+</span>
-                        <span>여행지 추가</span>
-                    </button>
-
-                    <!-- 선택된 여행지 태그 표시 -->
-                    <div class="selected-destinations" id="selectedDestinations">
-                        <!-- 선택된 여행지가 태그로 표시됨 -->
-                    </div>
-                </div>
-
-                <!-- Date Selection -->
-                <div class="form-group">
-                    <label class="form-label">
-                        <span class="label-icon">📅</span>
-                        언제 떠나시나요?
-                    </label>
-                    <div class="date-inputs">
-                        <div class="date-input-wrapper">
-                            <label class="date-sublabel">출발일</label>
-                            <input type="date" class="form-input date-input" name="start_date" id="startDate">
-                        </div>
-                        <span class="date-separator">~</span>
-                        <div class="date-input-wrapper">
-                            <label class="date-sublabel">도착일</label>
-                            <input type="date" class="form-input date-input" name="end_date" id="endDate">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Travel Companion -->
-                <div class="form-group">
-                    <label class="form-label">
-                        <span class="label-icon">👥</span>
-                        누구와 함께 가나요?
-                    </label>
-                    <div class="companion-options">
-                        <label class="companion-option">
-                            <input type="radio" name="companion" value="alone" id="companionAlone">
-                            <span class="companion-card">
-                                <span class="companion-icon">🧍</span>
-                                <span class="companion-text">혼자</span>
-                            </span>
-                        </label>
-                        <label class="companion-option">
-                            <input type="radio" name="companion" value="friends" id="companionFriends">
-                            <span class="companion-card">
-                                <span class="companion-icon">👫</span>
-                                <span class="companion-text">친구</span>
-                            </span>
-                        </label>
-                        <label class="companion-option">
-                            <input type="radio" name="companion" value="couple" id="companionCouple">
-                            <span class="companion-card">
-                                <span class="companion-icon">💑</span>
-                                <span class="companion-text">연인</span>
-                            </span>
-                        </label>
-                        <label class="companion-option">
-                            <input type="radio" name="companion" value="family" id="companionFamily">
-                            <span class="companion-card">
-                                <span class="companion-icon">👨‍👩‍👧‍👦</span>
-                                <span class="companion-text">가족</span>
-                            </span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Travel Style - Instagram Style Cards -->
-                <div class="form-group">
-                    <label class="form-label">
-                        <span class="label-icon">🎨</span>
-                        여행 스타일 <span class="label-hint">(복수 선택 가능)</span>
-                    </label>
-                    <div class="style-cards-grid">
-                        <label class="style-card" data-style="food">
-                            <input type="checkbox" name="style" value="food">
-                            <div class="card-bg"></div>
-                            <div class="card-content">
-                                <span class="card-icon">🍽️</span>
-                                <span class="card-text">맛집 탐방</span>
-                            </div>
-                            <div class="card-check">✓</div>
-                        </label>
-                        <label class="style-card" data-style="relax">
-                            <input type="checkbox" name="style" value="relax">
-                            <div class="card-bg"></div>
-                            <div class="card-content">
-                                <span class="card-icon">🏖️</span>
-                                <span class="card-text">휴양</span>
-                            </div>
-                            <div class="card-check">✓</div>
-                        </label>
-                        <label class="style-card" data-style="activity">
-                            <input type="checkbox" name="style" value="activity">
-                            <div class="card-bg"></div>
-                            <div class="card-content">
-                                <span class="card-icon">🏄</span>
-                                <span class="card-text">액티비티</span>
-                            </div>
-                            <div class="card-check">✓</div>
-                        </label>
-                        <label class="style-card" data-style="culture">
-                            <input type="checkbox" name="style" value="culture">
-                            <div class="card-bg"></div>
-                            <div class="card-content">
-                                <span class="card-icon">🎭</span>
-                                <span class="card-text">문화예술</span>
-                            </div>
-                            <div class="card-check">✓</div>
-                        </label>
-                        <label class="style-card" data-style="shopping">
-                            <input type="checkbox" name="style" value="shopping">
-                            <div class="card-bg"></div>
-                            <div class="card-content">
-                                <span class="card-icon">🛍️</span>
-                                <span class="card-text">쇼핑</span>
-                            </div>
-                            <div class="card-check">✓</div>
-                        </label>
-                        <label class="style-card" data-style="nature">
-                            <input type="checkbox" name="style" value="nature">
-                            <div class="card-bg"></div>
-                            <div class="card-content">
-                                <span class="card-icon">🌿</span>
-                                <span class="card-text">자연 탐험</span>
-                            </div>
-                            <div class="card-check">✓</div>
-                        </label>
-                        <label class="style-card" data-style="photo">
-                            <input type="checkbox" name="style" value="photo">
-                            <div class="card-bg"></div>
-                            <div class="card-content">
-                                <span class="card-icon">📸</span>
-                                <span class="card-text">포토 스팟</span>
-                            </div>
-                            <div class="card-check">✓</div>
-                        </label>
-                        <label class="style-card" data-style="nightlife">
-                            <input type="checkbox" name="style" value="nightlife">
-                            <div class="card-bg"></div>
-                            <div class="card-content">
-                                <span class="card-icon">🌙</span>
-                                <span class="card-text">나이트라이프</span>
-                            </div>
-                            <div class="card-check">✓</div>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Submit Button -->
-                <div class="form-submit">
-                    <button type="submit" class="submit-btn" id="generateBtn">
-                        <span class="btn-sparkle">✨</span>
-                        <span class="btn-text">일정 생성하기</span>
-                        <span class="btn-arrow-right">→</span>
-                    </button>
-                    <p class="submit-hint">AI가 약 10초 내에 맞춤 일정을 생성해드립니다</p>
-                </div>
-            </form>
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">smart_toy</span>
+                <span class="font-bold">AI 기반 맞춤형 인사이트</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">savings</span>
+                <span class="font-bold">최적의 예산 설계</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">schedule</span>
+                <span class="font-bold">실시간 정보 업데이트</span>
+            </div>
         </div>
     </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-container">
-            <p>&copy; 2026 Plan.It. All rights reserved.</p>
+    <main class="max-w-7xl mx-auto px-6 py-16">
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+            <div>
+                <span class="text-primary font-bold uppercase tracking-widest text-xs mb-2 block">당신을 위한 맞춤 추천</span>
+                <h2 class="text-3xl md:text-4xl font-bold">인기 여행지 둘러보기</h2>
+            </div>
+            <div class="flex border-b border-slate-200 dark:border-slate-800 gap-8">
+                <a class="flex flex-col items-center border-b-2 border-primary text-primary pb-3 font-bold text-sm"
+                    href="#">유럽</a>
+                <a class="flex flex-col items-center border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 pb-3 font-bold text-sm transition-all"
+                    href="#">아시아</a>
+                <a class="flex flex-col items-center border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 pb-3 font-bold text-sm transition-all"
+                    href="#">아메리카</a>
+                <a class="flex flex-col items-center border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 pb-3 font-bold text-sm transition-all"
+                    href="#">아프리카</a>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div
+                class="group relative overflow-hidden rounded-xl aspect-[3/4] cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
+                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                    style='background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 50%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuAqmho6n_1zVk71gRM8jsm6w2Z7_GVmzD8k5giS8UCXcECBkjwviUM6yCLNfrwaUYD9x3PhcFoE4R8g7XClF3ivHJWtAZD7TZIP-pQR-1tVTjgqBOrjbCMzmRjKyPWhnroZqP0XqoTHL1VwFfahB2JF-vwHghkb48YtI-I2JzyXjDYMOjVoSir5h4nacFqFGzpRlZapc6uyxL1ip6sRDlI0VzHxySqoC356miJfAE-lpeKwBNrOpsE-LCPNiKKo2-MeG5Vlq14Pfhw");'>
+                </div>
+                <div class="absolute bottom-0 left-0 p-6 w-full">
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <p class="text-white text-2xl font-bold mb-1">그리스, 산토리니</p>
+                            <div class="flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm text-yellow-400 fill-1">star</span>
+                                <span class="text-sm font-medium text-white/90">4.9 (2.4k 리뷰)</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-white/70 text-[10px] uppercase font-bold tracking-tighter">최저가</p>
+                            <p class="text-white text-xl font-bold">₩1,720,000</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="group relative overflow-hidden rounded-xl aspect-[3/4] cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
+                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                    style='background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 50%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuDf_fMSc9x5murkEHnE7MCGG3e1ZoMF3_7npGgUlHmIQvNuyapWvsrym-42rDEtDfIN4AprTREg44wV8PajKsTmV5FAbV_pZqZa38_Z3Ejs2mwqmnVFK-TlXEZb_8GJr6fOpnAE3hEue6rnmBAi1dfrv1B4MqnXSR2QYWRjCQ2rmxwDoPlSe3ETRX4O2mUQBiO8-cC4gohdTZf3MQvqfYtTlyVbl8pH4-YSldfjgmF5_wqqhqqFYJVoWeEl9QitzeU116qUHKxbQqY");'>
+                </div>
+                <div class="absolute bottom-0 left-0 p-6 w-full">
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <p class="text-white text-2xl font-bold mb-1">일본, 교토</p>
+                            <div class="flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm text-yellow-400 fill-1">star</span>
+                                <span class="text-sm font-medium text-white/90">4.8 (1.8k 리뷰)</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-white/70 text-[10px] uppercase font-bold tracking-tighter">최저가</p>
+                            <p class="text-white text-xl font-bold">₩980,000</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="group relative overflow-hidden rounded-xl aspect-[3/4] cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
+                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                    style='background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 50%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuAGXKYCp6waDfygBjhwhfFQJ1JuM8yaJk2k6-7EglXB_12CfNVkjffJQHz_dsd8Bscz4FtUB2ud3O0ZGUtmOcBIBN-wbnpaKMhMTzv4QDGhlO1nonQfq9cWMWPv3REuXKtgguLLqhG5TSBa5lEBnpxuqoI4XL3UIywGFybsQis-v4YTQYHt8ahoP8uGgD5RzVGIZanaSaGhTc2iD3NJXvu_21aCSc2szZbqxhsnwIfBOdaM-ZpsVD69IQ1DcHvHFLV2wdqZcDarnf0");'>
+                </div>
+                <div class="absolute bottom-0 left-0 p-6 w-full">
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <p class="text-white text-2xl font-bold mb-1">스위스, 알프스</p>
+                            <div class="flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm text-yellow-400 fill-1">star</span>
+                                <span class="text-sm font-medium text-white/90">5.0 (3.1k 리뷰)</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-white/70 text-[10px] uppercase font-bold tracking-tighter">최저가</p>
+                            <p class="text-white text-xl font-bold">₩4,500,000</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <section class="max-w-7xl mx-auto px-6 pb-24">
+        <div class="bg-primary rounded-2xl p-12 md:p-20 text-center relative overflow-hidden">
+            <div class="absolute -top-24 -right-24 w-64 h-64 bg-white/10 rounded-full"></div>
+            <div class="absolute -bottom-12 -left-12 w-48 h-48 bg-white/10 rounded-full"></div>
+            <div class="relative z-10">
+                <h2 class="text-white text-3xl md:text-5xl font-bold mb-6">꿈꾸던 여행을 현실로 만드세요</h2>
+                <p class="text-white/80 text-lg mb-10 max-w-xl mx-auto font-medium">수천 명의 여행자들이 AI를 통해 최적의 일정을 설계하고
+                    있습니다. 더 이상의 복잡한 계획은 없습니다.</p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button
+                        class="bg-white text-primary px-10 py-4 rounded-lg font-bold hover:bg-slate-50 transition-all text-lg shadow-xl"
+                        onclick="location.href='create.html'">여행
+                        계획 시작하기</button>
+                    <button
+                        class="bg-primary-dark/20 border border-white/30 text-white px-10 py-4 rounded-lg font-bold hover:bg-white/10 transition-all text-lg backdrop-blur-sm">데모
+                        보기</button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <footer class="bg-white dark:bg-background-dark border-t border-slate-200 dark:border-slate-800 py-16">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div class="col-span-1 md:col-span-1">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="text-primary size-6">
+                            <svg fill="currentColor" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M44 11.2727C44 14.0109 39.8386 16.3957 33.69 17.6364C39.8386 18.877 44 21.2618 44 24C44 26.7382 39.8386 29.123 33.69 30.3636C39.8386 31.6043 44 33.9891 44 36.7273C44 40.7439 35.0457 44 24 44C12.9543 44 4 40.7439 4 36.7273C4 33.9891 8.16144 31.6043 14.31 30.3636C8.16144 29.123 4 26.7382 4 24C4 21.2618 8.16144 18.877 14.31 17.6364C8.16144 16.3957 4 14.0109 4 11.2727C4 7.25611 12.9543 4 24 4C35.0457 4 44 7.25611 44 11.2727Z">
+                                </path>
+                            </svg>
+                        </div>
+                        <h2 class="text-xl font-bold tracking-tight font-logo">VoyageAI</h2>
+                    </div>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed font-medium">인공지능의 힘으로 더 매끄럽고
+                        개인화된
+                        스마트한 여행 설계를 경험해 보세요.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-6">제품</h4>
+                    <ul class="space-y-4 text-sm font-medium text-slate-500 dark:text-slate-400">
+                        <li><a class="hover:text-primary transition-colors" href="#">AI 플래너</a></li>
+                        <li><a class="hover:text-primary transition-colors" href="#">그룹 여행</a></li>
+                        <li><a class="hover:text-primary transition-colors" href="#">요금제</a></li>
+                        <li><a class="hover:text-primary transition-colors" href="#">파트너십</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-6">고객 지원</h4>
+                    <ul class="space-y-4 text-sm font-medium text-slate-500 dark:text-slate-400">
+                        <li><a class="hover:text-primary transition-colors" href="#">고객센터</a></li>
+                        <li><a class="hover:text-primary transition-colors" href="#">안전 가이드</a></li>
+                        <li><a class="hover:text-primary transition-colors" href="#">이용약관</a></li>
+                        <li><a class="hover:text-primary transition-colors" href="#">개인정보처리방침</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-6">뉴스레터</h4>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-4">여행 팁과 AI 업데이트 소식을 받아보세요.</p>
+                    <div class="flex gap-2">
+                        <input
+                            class="bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm flex-1 px-4 py-2 focus:ring-1 focus:ring-primary"
+                            placeholder="이메일 주소" type="email" />
+                        <button class="bg-primary text-white p-2 rounded-lg hover:bg-primary/90 transition-all">
+                            <span class="material-symbols-outlined">send</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-400 font-medium">
+                <p>© 2024 VoyageAI Inc. 모든 권리 보유.</p>
+                <div class="flex gap-6">
+                    <a class="hover:text-primary transition-colors" href="#">트위터</a>
+                    <a class="hover:text-primary transition-colors" href="#">인스타그램</a>
+                    <a class="hover:text-primary transition-colors" href="#">링크드인</a>
+                </div>
+            </div>
         </div>
     </footer>
-
-    <!-- 로그인/회원가입 모달 -->
-    <div class="auth-modal-overlay" id="authModalOverlay">
-        <div class="auth-modal">
-            <button class="modal-close" id="modalClose">✕</button>
-
-            <!-- 모달 헤더/탭 -->
-            <div class="auth-tabs">
-                <button class="auth-tab active" id="loginTab" data-tab="login">로그인</button>
-                <button class="auth-tab" id="signupTab" data-tab="signup">회원가입</button>
-            </div>
-
-            <!-- 로그인 폼 -->
-            <form class="auth-form" id="loginForm">
-                <!-- 구글 로그인 버튼 -->
-                <button type="button" class="google-login-btn" id="googleLoginBtn">
-                    <svg class="google-icon" viewBox="0 0 24 24" width="20" height="20">
-                        <path fill="#4285F4"
-                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                        <path fill="#34A853"
-                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                        <path fill="#FBBC05"
-                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                        <path fill="#EA4335"
-                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                    </svg>
-                    <span>Google로 계속하기</span>
-                </button>
-
-                <!-- 구분선 -->
-                <div class="auth-divider">
-                    <span>또는</span>
-                </div>
-
-                <div class="auth-form-group">
-                    <label class="auth-label">이메일</label>
-                    <input type="email" class="auth-input" id="loginEmail" placeholder="your@email.com" required>
-                </div>
-                <div class="auth-form-group">
-                    <label class="auth-label">비밀번호</label>
-                    <input type="password" class="auth-input" id="loginPassword" placeholder="비밀번호 입력" required>
-                </div>
-                <button type="submit" class="auth-submit-btn" id="loginSubmitBtn">
-                    <span class="btn-text">로그인</span>
-                </button>
-            </form>
-
-            <!-- 회원가입 폼 (기본 숨김) -->
-            <form class="auth-form" id="signupForm" style="display: none;">
-                <div class="auth-form-group">
-                    <label class="auth-label">이메일</label>
-                    <input type="email" class="auth-input" id="signupEmail" placeholder="your@email.com" required>
-                </div>
-                <div class="auth-form-group">
-                    <label class="auth-label">비밀번호</label>
-                    <input type="password" class="auth-input" id="signupPassword" placeholder="6자 이상 입력" minlength="6"
-                        required>
-                </div>
-                <div class="auth-form-group">
-                    <label class="auth-label">비밀번호 확인</label>
-                    <input type="password" class="auth-input" id="signupPasswordConfirm" placeholder="비밀번호 다시 입력"
-                        required>
-                </div>
-                <button type="submit" class="auth-submit-btn" id="signupSubmitBtn">
-                    <span class="btn-text">회원가입</span>
-                </button>
-            </form>
-
-            <!-- 에러 메시지 -->
-            <div class="auth-error" id="authError" style="display: none;"></div>
-        </div>
-    </div>
-
-    <!-- 일정 결과는 itinerary.html 페이지에서 표시됩니다 -->
-
-    <!-- 내 정보 모달 -->
-    <!-- 내 정보 모달 삭제됨 (profile.html로 이동) -->
-
-    <!-- 내 여행 모달 -->
-    <div class="modal-overlay" id="myTripsModalOverlay">
-        <div class="modal-content modal-large">
-            <button class="modal-close" id="myTripsModalClose">✕</button>
-            <h2 class="modal-title">내 여행</h2>
-            <div class="my-trips-content">
-                <div class="trips-list" id="tripsList">
-                    <!-- 여행 목록이 동적으로 추가됨 -->
-                    <div class="trips-empty" id="tripsEmpty">
-                        <p>아직 저장된 여행이 없습니다.</p>
-                        <p class="empty-hint">새로운 여행을 계획해보세요!</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Slide-Out Panel (Triple Style) -->
-    <div class="slide-panel-overlay" id="slidePanelOverlay"></div>
-    <aside class="slide-panel" id="slidePanel">
-        <div class="slide-panel-header">
-            <button class="slide-panel-close" id="slidePanelClose" aria-label="닫기">×</button>
-        </div>
-        <div class="slide-panel-content">
-            <!-- 로그인 전: 로그인/회원가입 버튼 -->
-            <div class="slide-panel-section" id="slidePanelGuest">
-                <button class="slide-menu-item highlight" id="slidePanelLoginBtn">로그인 / 회원가입</button>
-            </div>
-
-            <!-- 로그인 후: 사용자 정보 -->
-            <div class="slide-panel-section" id="slidePanelUser" style="display: none;">
-                <div class="slide-user-info">
-                    <div class="user-avatar"></div>
-                    <span id="slidePanelUserEmail">사용자 이메일</span>
-                </div>
-            </div>
-
-            <!-- 공통 메뉴 (로그인 여부 무관) -->
-            <div class="slide-panel-section">
-                <div class="slide-section-title">여행 서비스</div>
-                <a href="#travel-form-section" class="slide-menu-item" id="slidePanelCreateBtn">
-                    <span>AI 맞춤 일정 만들기</span>
-                    <span class="menu-arrow">→</span>
-                </a>
-                <button class="slide-menu-item" id="slidePanelBudgetBtn">
-                    <span>여행 견적내기</span>
-                    <span class="menu-arrow">→</span>
-                </button>
-            </div>
-
-            <!-- 로그인 필수 메뉴 -->
-            <div class="slide-panel-section" id="slidePanelAuthRequired" style="display: none;">
-                <div class="slide-section-title">내 계정</div>
-                <button class="slide-menu-item" id="slidePanelMyTripsBtn">
-                    <span>내 여행</span>
-                    <span class="menu-arrow">→</span>
-                </button>
-                <a href="profile.html" class="slide-menu-item" id="slidePanelProfileBtn">
-                    <span>내 정보</span>
-                    <span class="menu-arrow">→</span>
-                </a>
-            </div>
-
-            <!-- 기타 (공통) -->
-            <div class="slide-panel-section">
-                <div class="slide-section-title">기타</div>
-                <button class="slide-menu-item" id="slidePanelSettingsBtn">
-                    <span>설정</span>
-                    <span class="menu-arrow">→</span>
-                </button>
-            </div>
-        </div>
-        <div class="slide-panel-footer" id="slidePanelFooter" style="display: none;">
-            <button class="slide-menu-item logout" id="slidePanelLogoutBtn">로그아웃</button>
-        </div>
-    </aside>
 
     <!-- Scripts -->
     <script src="supabase.js"></script>
     <script src="auth.js"></script>
-    <script src="api.js"></script>
-    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Landing Page Logic for search redirection
+            const landingGenerateBtn = document.getElementById('landingGenerateBtn');
+            const landingDestination = document.getElementById('landingDestination');
+            const landingStartDate = document.getElementById('landingStartDate');
+
+            if (landingGenerateBtn) {
+                landingGenerateBtn.addEventListener('click', function () {
+                    const destination = landingDestination.value.trim();
+                    const startDate = landingStartDate.value;
+
+                    let queryParams = new URLSearchParams();
+                    if (destination) queryParams.set('destination', destination);
+                    if (startDate) queryParams.set('startDate', startDate);
+
+                    window.location.href = `create.html?${queryParams.toString()}`;
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>

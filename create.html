@@ -1,0 +1,355 @@
+<!-- Step-by-Step Trip Setup -->
+<!DOCTYPE html>
+<html class="light" lang="ko">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-KESMY9MVTT"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-KESMY9MVTT');
+    </script>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>단계별 여행 설정 | TripPlanner AI</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .active-card {
+            border: 2px solid #137fec;
+            background-color: rgba(19, 127, 236, 0.05);
+        }
+    </style>
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display min-h-screen">
+    <div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+        <div class="layout-container flex h-full grow flex-col">
+            <header
+                class="flex items-center justify-between whitespace-nowrap border-b border-solid border-gray-200 dark:border-gray-800 px-10 py-3 bg-white dark:bg-background-dark">
+                <div class="flex items-center gap-4 text-gray-900 dark:text-white cursor-pointer"
+                    onclick="location.href='index.html'">
+                    <div class="size-6 text-primary">
+                        <svg fill="currentColor" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                            <path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V44Z"
+                                fill-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">VoyageAI</h2>
+                </div>
+                <div class="flex flex-1 justify-end gap-8">
+                    <div class="flex items-center gap-9">
+                        <a class="text-gray-700 dark:text-gray-300 text-sm font-medium leading-normal"
+                            href="itinerary.html">내 여행</a>
+                        <a class="text-gray-700 dark:text-gray-300 text-sm font-medium leading-normal" href="#">고객지원</a>
+                    </div>
+                </div>
+            </header>
+            <main class="flex flex-1 justify-center py-10 px-4">
+                <div class="layout-content-container flex flex-col max-w-[800px] flex-1">
+                    <div class="flex flex-col gap-2 p-4 mb-4">
+                        <h1 class="text-gray-900 dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">
+                            완벽한 여행을 계획하세요</h1>
+                        <p class="text-gray-500 dark:text-gray-400 text-base font-normal">여행 세부 정보를 입력해주세요.</p>
+                    </div>
+
+                    <div
+                        class="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-100 dark:border-gray-800 overflow-hidden">
+                        <div
+                            class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
+                            <h3
+                                class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider mb-3">
+                                여행 설정</h3>
+                            <!-- Destination Input -->
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-full">
+                                    <label
+                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">목적지</label>
+                                    <div class="relative">
+                                        <input type="text" id="destinationInput"
+                                            class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-700"
+                                            placeholder="어디로 떠나시나요?">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-8 space-y-10">
+                            <div>
+                                <h3
+                                    class="text-gray-900 dark:text-white text-xl font-bold mb-4 flex items-center gap-2">
+                                    <span class="material-symbols-outlined">calendar_month</span>
+                                    언제 떠나시나요?
+                                </h3>
+                                <div class="flex gap-4">
+                                    <div class="flex-1">
+                                        <label class="block text-sm text-gray-500 mb-1">출발일</label>
+                                        <input type="date" id="startDate"
+                                            class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-700">
+                                    </div>
+                                    <div class="flex-1">
+                                        <label class="block text-sm text-gray-500 mb-1">도착일</label>
+                                        <input type="date" id="endDate"
+                                            class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-700">
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <h3
+                                    class="text-gray-900 dark:text-white text-xl font-bold mb-4 flex items-center gap-2">
+                                    <span class="material-symbols-outlined">interests</span>
+                                    여행 취향은 무엇인가요? (복수 선택)
+                                </h3>
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" id="interestsContainer">
+                                    <div class="cursor-pointer group flex flex-col items-center justify-center p-4 rounded-xl border-2 border-gray-100 dark:border-gray-800 hover:border-primary transition-all style-card"
+                                        data-value="relax">
+                                        <div
+                                            class="size-12 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-2 group-hover:bg-primary/10">
+                                            <span
+                                                class="material-symbols-outlined text-gray-600 dark:text-gray-400 group-hover:text-primary">spa</span>
+                                        </div>
+                                        <span class="text-sm font-bold dark:text-white">휴식</span>
+                                    </div>
+                                    <div class="cursor-pointer group flex flex-col items-center justify-center p-4 rounded-xl border-2 border-gray-100 dark:border-gray-800 hover:border-primary transition-all style-card"
+                                        data-value="activity">
+                                        <div
+                                            class="size-12 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-2 group-hover:bg-primary/10">
+                                            <span
+                                                class="material-symbols-outlined text-gray-600 dark:text-gray-400 group-hover:text-primary">hiking</span>
+                                        </div>
+                                        <span class="text-sm font-bold dark:text-white">액티비티</span>
+                                    </div>
+                                    <div class="cursor-pointer group flex flex-col items-center justify-center p-4 rounded-xl border-2 border-gray-100 dark:border-gray-800 hover:border-primary transition-all style-card"
+                                        data-value="food">
+                                        <div
+                                            class="size-12 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-2 group-hover:bg-primary/10">
+                                            <span
+                                                class="material-symbols-outlined text-gray-600 dark:text-gray-400 group-hover:text-primary">restaurant</span>
+                                        </div>
+                                        <span class="text-sm font-bold dark:text-white">맛집 탐방</span>
+                                    </div>
+                                    <div class="cursor-pointer group flex flex-col items-center justify-center p-4 rounded-xl border-2 border-gray-100 dark:border-gray-800 hover:border-primary transition-all style-card"
+                                        data-value="culture">
+                                        <div
+                                            class="size-12 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-2 group-hover:bg-primary/10">
+                                            <span
+                                                class="material-symbols-outlined text-gray-600 dark:text-gray-400 group-hover:text-primary">museum</span>
+                                        </div>
+                                        <span class="text-sm font-bold dark:text-white">문화/예술</span>
+                                    </div>
+                                    <div class="cursor-pointer group flex flex-col items-center justify-center p-4 rounded-xl border-2 border-gray-100 dark:border-gray-800 hover:border-primary transition-all style-card"
+                                        data-value="shopping">
+                                        <div
+                                            class="size-12 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-2 group-hover:bg-primary/10">
+                                            <span
+                                                class="material-symbols-outlined text-gray-600 dark:text-gray-400 group-hover:text-primary">shopping_bag</span>
+                                        </div>
+                                        <span class="text-sm font-bold dark:text-white">쇼핑</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3
+                                    class="text-gray-900 dark:text-white text-xl font-bold mb-4 flex items-center gap-2">
+                                    <span class="material-symbols-outlined">group</span>
+                                    동행자
+                                </h3>
+                                <div class="flex gap-4 flex-wrap" id="companionContainer">
+                                    <button class="px-4 py-2 border rounded-full hover:bg-gray-100 companion-btn"
+                                        data-value="alone">혼자</button>
+                                    <button class="px-4 py-2 border rounded-full hover:bg-gray-100 companion-btn"
+                                        data-value="friend">친구</button>
+                                    <button class="px-4 py-2 border rounded-full hover:bg-gray-100 companion-btn"
+                                        data-value="partner">연인</button>
+                                    <button class="px-4 py-2 border rounded-full hover:bg-gray-100 companion-btn"
+                                        data-value="family">가족</button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3
+                                    class="text-gray-900 dark:text-white text-xl font-bold flex items-center gap-2 mb-4">
+                                    <span class="material-symbols-outlined">payments</span>
+                                    예산 설정 (하루 기준)
+                                </h3>
+                                <div class="px-2">
+                                    <input
+                                        class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary"
+                                        max="3" min="1" step="1" type="range" id="budgetRange" value="2" />
+                                    <div
+                                        class="flex justify-between mt-3 text-xs font-bold text-gray-400 uppercase tracking-widest">
+                                        <span>알뜰하게</span>
+                                        <span>적당하게</span>
+                                        <span>여유롭게</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            class="p-6 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-800/20">
+                            <button
+                                class="px-6 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 font-bold hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors flex items-center gap-2"
+                                onclick="history.back()">
+                                <span class="material-symbols-outlined text-sm">arrow_back</span>
+                                이전
+                            </button>
+                            <button id="generateBtn"
+                                class="px-10 py-2.5 rounded-lg bg-primary text-white font-bold hover:bg-primary/90 transition-colors flex items-center gap-2 shadow-lg shadow-primary/20">
+                                <span class="material-symbols-outlined">auto_awesome</span>
+                                일정 생성하기
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="supabase.js"></script>
+    <script src="auth.js"></script>
+    <script src="api/generate-itinerary.js"></script>
+    <!-- NOTE: This is likely server side, but we need client side logic here -->
+
+    <script>
+        // Inline script for Wizard Logic
+        document.addEventListener('DOMContentLoaded', function () {
+            // URL params parsing
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialDest = urlParams.get('destination');
+            const initialDate = urlParams.get('startDate');
+
+            if (initialDest) document.getElementById('destinationInput').value = initialDest;
+            if (initialDate) document.getElementById('startDate').value = initialDate;
+
+            // Interest Cards Selection
+            const interestCards = document.querySelectorAll('.style-card');
+            interestCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    card.classList.toggle('active-card');
+                });
+            });
+
+            // Companion Selection
+            const companionBtns = document.querySelectorAll('.companion-btn');
+            companionBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    companionBtns.forEach(b => {
+                        b.classList.remove('bg-primary', 'text-white');
+                        b.classList.add('hover:bg-gray-100');
+                    });
+                    btn.classList.remove('hover:bg-gray-100');
+                    btn.classList.add('bg-primary', 'text-white');
+                    btn.dataset.selected = "true";
+                });
+            });
+
+            // Generate Button
+            const generateBtn = document.getElementById('generateBtn');
+            generateBtn.addEventListener('click', async function () {
+                // Collect Data
+                const destination = document.getElementById('destinationInput').value;
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+
+                const styles = Array.from(document.querySelectorAll('.style-card.active-card')).map(el => el.dataset.value);
+                const companionBtn = Array.from(document.querySelectorAll('.companion-btn')).find(b => b.classList.contains('bg-primary'));
+                const companion = companionBtn ? companionBtn.dataset.value : 'alone';
+
+                const budgetVal = document.getElementById('budgetRange').value;
+                const budgetMap = { '1': 'low', '2': 'medium', '3': 'high' };
+                const budget = budgetMap[budgetVal];
+
+                if (!destination || !startDate || !endDate) {
+                    alert('목적지와 날짜를 모두 입력해주세요.');
+                    return;
+                }
+
+                // Show Loading
+                const originalText = generateBtn.innerHTML;
+                generateBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> 생성 중...';
+                generateBtn.disabled = true;
+
+                // Prepare API Payload (Simulation utilizing existing server endpoint if possible, or direct API call)
+                // Since this is client side, we should call our server endpoint.
+
+                try {
+                    const response = await fetch('http://localhost:3000/api/generate-itinerary', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            destinations: [destination],
+                            startDate,
+                            endDate,
+                            companion,
+                            style: styles,
+                            scheduleType: 'relaxed' // Default
+                        })
+                    });
+
+                    if (!response.ok) throw new Error('Generation failed');
+
+                    const data = await response.json();
+
+                    // Save to LocalStorage to pass to Itinerary Page
+                    localStorage.setItem('travelItinerary', JSON.stringify(data));
+                    localStorage.setItem('tripInfo', JSON.stringify({
+                        destinations: [destination],
+                        startDate,
+                        endDate,
+                        companion,
+                        styles
+                    }));
+
+                    // Redirect
+                    window.location.href = 'itinerary.html';
+
+                } catch (err) {
+                    console.error(err);
+                    alert('일정 생성 중 오류가 발생했습니다: ' + err.message);
+                    generateBtn.innerHTML = originalText;
+                    generateBtn.disabled = false;
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

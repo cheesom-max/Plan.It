@@ -100,65 +100,66 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ===== Hero Search Box - Airbnb Style UX =====
     const heroSearchForm = document.getElementById('heroSearchForm');
-    const heroDestination = document.getElementById('heroDestination');
-    const heroStartDate = document.getElementById('heroStartDate');
-    const heroEndDate = document.getElementById('heroEndDate');
-    const heroSearchBtn = document.getElementById('heroSearchBtn');
-    const heroSuggestions = document.querySelector('.hero-suggestions');
+    if (heroSearchForm) { // Guard clause added
+        const heroDestination = document.getElementById('heroDestination');
+        const heroStartDate = document.getElementById('heroStartDate');
+        const heroEndDate = document.getElementById('heroEndDate');
+        const heroSearchBtn = document.getElementById('heroSearchBtn');
+        const heroSuggestions = document.querySelector('.hero-suggestions');
 
-    // Hero 날짜 필드 초기화 - 오늘 이후만 선택 가능
-    if (heroStartDate && heroEndDate) {
-        const today = new Date().toISOString().split('T')[0];
-        heroStartDate.min = today;
-        heroEndDate.min = today;
+        // Hero 날짜 필드 초기화 - 오늘 이후만 선택 가능
+        if (heroStartDate && heroEndDate) {
+            const today = new Date().toISOString().split('T')[0];
+            heroStartDate.min = today;
+            heroEndDate.min = today;
 
-        // 체크인 변경 시 체크아웃 최소값 연동
-        heroStartDate.addEventListener('change', function () {
-            heroEndDate.min = this.value;
-            if (heroEndDate.value && heroEndDate.value < this.value) {
-                heroEndDate.value = this.value;
-            }
-            // 날짜 선택 후 다음 필드로 자동 이동
-            if (this.value) {
-                heroEndDate.focus();
-            }
-        });
+            // 체크인 변경 시 체크아웃 최소값 연동
+            heroStartDate.addEventListener('change', function () {
+                heroEndDate.min = this.value;
+                if (heroEndDate.value && heroEndDate.value < this.value) {
+                    heroEndDate.value = this.value;
+                }
+                // 날짜 선택 후 다음 필드로 자동 이동
+                if (this.value) {
+                    heroEndDate.focus();
+                }
+            });
 
-        // 체크아웃 선택 완료 시 검색 버튼 하이라이트
-        heroEndDate.addEventListener('change', function () {
-            if (this.value && heroStartDate.value && heroDestination.value) {
-                heroSearchBtn.classList.add('ready');
-            }
-        });
-    }
-
-    // Hero 자동완성 - 로컬 도시 데이터 사용 (API 비용 무료!)
-    if (heroDestination && heroSuggestions) {
-        // Debounce 함수
-        function debounceHero(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
+            // 체크아웃 선택 완료 시 검색 버튼 하이라이트
+            heroEndDate.addEventListener('change', function () {
+                if (this.value && heroStartDate.value && heroDestination.value) {
+                    heroSearchBtn.classList.add('ready');
+                }
+            });
         }
 
-        // Hero 도시 검색 (로컬 데이터 사용)
-        const searchHeroCities = debounceHero(function (query) {
-            if (!query || query.length < 2) {
-                heroSuggestions.classList.remove('active');
-                return;
+        // Hero 자동완성 - 로컬 도시 데이터 사용 (API 비용 무료!)
+        if (heroDestination && heroSuggestions) {
+            // Debounce 함수
+            function debounceHero(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
             }
 
-            // 로컬 도시 데이터에서 검색
-            const cities = searchCitiesLocal(query);
+            // Hero 도시 검색 (로컬 데이터 사용)
+            const searchHeroCities = debounceHero(function (query) {
+                if (!query || query.length < 2) {
+                    heroSuggestions.classList.remove('active');
+                    return;
+                }
 
-            if (cities.length > 0) {
-                heroSuggestions.innerHTML = cities.map(city => `
+                // 로컬 도시 데이터에서 검색
+                const cities = searchCitiesLocal(query);
+
+                if (cities.length > 0) {
+                    heroSuggestions.innerHTML = cities.map(city => `
                     <div class="suggestion-item" data-name="${city.name}" data-country="${city.country}">
                         <span class="suggestion-icon"></span>
                         <span class="suggestion-text">
@@ -167,10 +168,10 @@ document.addEventListener('DOMContentLoaded', function () {
                         </span>
                     </div>
                 `).join('');
-                heroSuggestions.classList.add('active');
-            } else {
-                // 검색 결과 없을 때 직접 입력 허용
-                heroSuggestions.innerHTML = `
+                    heroSuggestions.classList.add('active');
+                } else {
+                    // 검색 결과 없을 때 직접 입력 허용
+                    heroSuggestions.innerHTML = `
                     <div class="suggestion-item" data-name="${query}" data-country="">
                         <span class="suggestion-icon"></span>
                         <span class="suggestion-text">
@@ -178,125 +179,126 @@ document.addEventListener('DOMContentLoaded', function () {
                         </span>
                     </div>
                 `;
-                heroSuggestions.classList.add('active');
-            }
-        }, 150); // 로컬 검색은 더 빠르므로 debounce 시간 단축
+                    heroSuggestions.classList.add('active');
+                }
+            }, 150); // 로컬 검색은 더 빠르므로 debounce 시간 단축
 
-        // 입력 이벤트
-        heroDestination.addEventListener('input', function () {
-            searchHeroCities(this.value.trim());
-        });
-
-        // 포커스 시 이전 검색 결과 보여주기
-        heroDestination.addEventListener('focus', function () {
-            if (this.value.trim().length >= 2) {
+            // 입력 이벤트
+            heroDestination.addEventListener('input', function () {
                 searchHeroCities(this.value.trim());
-            }
-        });
+            });
 
-        // 자동완성 항목 클릭 처리
-        heroSuggestions.addEventListener('click', function (e) {
-            const item = e.target.closest('.suggestion-item');
-            if (item) {
-                const name = item.dataset.name;
-                const country = item.dataset.country;
-                heroDestination.value = country ? `${name}, ${country}` : name;
-                heroSuggestions.classList.remove('active');
-                // 목적지 선택 후 체크인 필드로 자동 이동
-                heroStartDate.focus();
-            }
-        });
+            // 포커스 시 이전 검색 결과 보여주기
+            heroDestination.addEventListener('focus', function () {
+                if (this.value.trim().length >= 2) {
+                    searchHeroCities(this.value.trim());
+                }
+            });
 
-        // 외부 클릭 시 닫기
-        document.addEventListener('click', function (e) {
-            if (!heroDestination.contains(e.target) && !heroSuggestions.contains(e.target)) {
-                heroSuggestions.classList.remove('active');
-            }
-        });
-    }
+            // 자동완성 항목 클릭 처리
+            heroSuggestions.addEventListener('click', function (e) {
+                const item = e.target.closest('.suggestion-item');
+                if (item) {
+                    const name = item.dataset.name;
+                    const country = item.dataset.country;
+                    heroDestination.value = country ? `${name}, ${country}` : name;
+                    heroSuggestions.classList.remove('active');
+                    // 목적지 선택 후 체크인 필드로 자동 이동
+                    heroStartDate.focus();
+                }
+            });
 
-    // Hero 폼 Submit 방지 및 엔터키 처리
-    if (heroSearchForm) {
-        heroSearchForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            // 검색 버튼 클릭 트리거
-            if (heroSearchBtn) heroSearchBtn.click();
-        });
-    }
+            // 외부 클릭 시 닫기
+            document.addEventListener('click', function (e) {
+                if (!heroDestination.contains(e.target) && !heroSuggestions.contains(e.target)) {
+                    heroSuggestions.classList.remove('active');
+                }
+            });
+        }
 
-    // 엔터키로 다음 필드 이동 (에어비앤비 스타일)
-    if (heroDestination) {
-        heroDestination.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') {
+        // Hero 폼 Submit 방지 및 엔터키 처리
+        if (heroSearchForm) {
+            heroSearchForm.addEventListener('submit', function (e) {
                 e.preventDefault();
-                heroSuggestions?.classList.remove('active');
-                heroStartDate?.focus();
-            }
-        });
-    }
+                // 검색 버튼 클릭 트리거
+                if (heroSearchBtn) heroSearchBtn.click();
+            });
+        }
 
-    if (heroStartDate) {
-        heroStartDate.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                heroEndDate?.focus();
-            }
-        });
-    }
+        // 엔터키로 다음 필드 이동 (에어비앤비 스타일)
+        if (heroDestination) {
+            heroDestination.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    heroSuggestions?.classList.remove('active');
+                    heroStartDate?.focus();
+                }
+            });
+        }
 
-    if (heroEndDate) {
-        heroEndDate.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                heroSearchBtn?.click();
-            }
-        });
-    }
+        if (heroStartDate) {
+            heroStartDate.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    heroEndDate?.focus();
+                }
+            });
+        }
 
-    // Hero 검색 버튼 클릭 - 메인 폼으로 데이터 동기화
-    if (heroSearchBtn) {
-        heroSearchBtn.addEventListener('click', function () {
-            const destination = heroDestination?.value?.trim();
-            const startDate = heroStartDate?.value;
-            const endDate = heroEndDate?.value;
+        if (heroEndDate) {
+            heroEndDate.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    heroSearchBtn?.click();
+                }
+            });
+        }
 
-            // 유효성 검사
-            if (!destination) {
-                showNotification('여행지를 입력해주세요.');
-                heroDestination?.focus();
-                return;
-            }
+        // Hero 검색 버튼 클릭 - 메인 폼으로 데이터 동기화
+        if (heroSearchBtn) {
+            heroSearchBtn.addEventListener('click', function () {
+                const destination = heroDestination?.value?.trim();
+                const startDate = heroStartDate?.value;
+                const endDate = heroEndDate?.value;
 
-            // 메인 폼 요소 찾기 및 데이터 동기화
-            const mainDestInput = destinationsContainer?.querySelector('.destination-input');
-            if (mainDestInput) {
-                mainDestInput.value = destination;
-                mainDestInput.dataset.name = destination;
-            }
+                // 유효성 검사
+                if (!destination) {
+                    showNotification('여행지를 입력해주세요.');
+                    heroDestination?.focus();
+                    return;
+                }
 
-            // [Fix] Hero 날짜 → 메인 폼 날짜 동기화
-            const mainStartDate = document.getElementById('startDate');
-            const mainEndDate = document.getElementById('endDate');
-            if (startDate && mainStartDate) {
-                mainStartDate.value = startDate;
-            }
-            if (endDate && mainEndDate) {
-                mainEndDate.value = endDate;
-            }
+                // 메인 폼 요소 찾기 및 데이터 동기화
+                const mainDestInput = destinationsContainer?.querySelector('.destination-input');
+                if (mainDestInput) {
+                    mainDestInput.value = destination;
+                    mainDestInput.dataset.name = destination;
+                }
 
-            // 알림
-            if (!startDate || !endDate) {
-                showNotification('📅 날짜를 선택하시면 더 정확한 일정을 받을 수 있어요!');
-            } else {
-                showNotification('✅ 상세 옵션을 선택한 후 일정을 생성하세요!');
-            }
+                // [Fix] Hero 날짜 → 메인 폼 날짜 동기화
+                const mainStartDate = document.getElementById('startDate');
+                const mainEndDate = document.getElementById('endDate');
+                if (startDate && mainStartDate) {
+                    mainStartDate.value = startDate;
+                }
+                if (endDate && mainEndDate) {
+                    mainEndDate.value = endDate;
+                }
 
-            // 메인 폼 섹션으로 스크롤
-            const formSection = document.querySelector('.travel-form-section');
-            if (formSection) {
-                formSection.scrollIntoView({ behavior: 'smooth' });
-            }
-        });
+                // 알림
+                if (!startDate || !endDate) {
+                    showNotification('📅 날짜를 선택하시면 더 정확한 일정을 받을 수 있어요!');
+                } else {
+                    showNotification('✅ 상세 옵션을 선택한 후 일정을 생성하세요!');
+                }
+
+                // 메인 폼 섹션으로 스크롤
+                const formSection = document.querySelector('.travel-form-section');
+                if (formSection) {
+                    formSection.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        }
     }
 
     // ===== Navigation Scroll Effect =====

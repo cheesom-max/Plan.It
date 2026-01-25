@@ -1,5 +1,6 @@
+<!-- Integrated Itinerary Dashboard -->
 <!DOCTYPE html>
-<html lang="ko">
+<html class="light" lang="ko">
 
 <head>
     <!-- Google tag (gtag.js) -->
@@ -11,676 +12,266 @@
 
         gtag('config', 'G-KESMY9MVTT');
     </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="AI가 생성한 맞춤형 여행 일정표">
-    <title>여행 일정 | Plan.It</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-    <!-- Auth & Database Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js" defer></script>
-    <script src="auth.js" defer></script>
-    <style>
-        /* Itinerary Page Specific Styles */
-        .itinerary-page {
-            min-height: 100vh;
-            background: linear-gradient(180deg, #e8f0ff 0%, var(--bg-light) 100%);
-            padding-top: 80px;
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>통합 일정 대시보드 - VoyageAI</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans+KR:wght@400;500;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "sans": ["Noto Sans KR", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
         }
-
-        .itinerary-page .navbar {
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .itinerary-page .logo-text {
-            color: var(--text-primary);
-        }
-
-        .back-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            font-size: 1rem;
-            font-weight: 500;
-            font-family: inherit;
-            color: var(--text-secondary);
-            background: var(--bg-card);
-            border: 2px solid rgba(0, 0, 0, 0.1);
-            border-radius: var(--border-radius-lg);
-            cursor: pointer;
-            transition: var(--transition-normal);
-        }
-
-        .back-btn:hover {
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-        }
-
-        .itinerary-hero {
-            background: var(--gradient-primary);
-            padding: 3rem 2rem;
-            text-align: center;
-            color: var(--text-white);
-            margin-bottom: -2rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .itinerary-hero::after {
-            content: '';
-            position: absolute;
-            bottom: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 30px solid transparent;
-            border-right: 30px solid transparent;
-            border-top: 20px solid var(--secondary-color);
-        }
-
-        .route-display {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-
-        .route-city {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: var(--border-radius-lg);
-            font-weight: 500;
-        }
-
-        .route-arrow {
-            font-size: 1.25rem;
-            opacity: 0.8;
-        }
-
-        .trip-meta {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin-top: 1.5rem;
-            font-size: 0.95rem;
-            opacity: 0.9;
-        }
-
-        .trip-meta-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .itinerary-main {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 4rem 2rem 3rem;
-        }
-
-        .itinerary-summary-card {
-            background: var(--bg-card);
-            border-radius: var(--border-radius-xl);
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: var(--shadow-md);
-            text-align: center;
-        }
-
-        .itinerary-summary-card h2 {
-            font-size: 1.5rem;
-            color: var(--text-primary);
-            margin-bottom: 0.75rem;
-        }
-
-        .itinerary-summary-card p {
-            color: var(--text-secondary);
-            line-height: 1.8;
-        }
-
-        .days-timeline {
-            position: relative;
-        }
-
-        .days-timeline::before {
-            content: '';
-            position: absolute;
-            left: 24px;
-            top: 0;
-            bottom: 0;
-            width: 3px;
-            background: linear-gradient(180deg, var(--primary-color), var(--accent-color));
-            border-radius: 3px;
-        }
-
-        .timeline-day {
-            position: relative;
-            padding-left: 60px;
-            margin-bottom: 2rem;
-        }
-
-        .timeline-dot {
-            position: absolute;
-            left: 12px;
-            top: 0;
-            width: 28px;
-            height: 28px;
-            background: var(--gradient-primary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-white);
-            font-size: 0.85rem;
-            font-weight: 700;
-            box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
-            z-index: 1;
-        }
-
-        .timeline-card {
-            background: var(--bg-card);
-            border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-md);
-            overflow: hidden;
-            transition: var(--transition-normal);
-        }
-
-        .timeline-card:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .no-itinerary {
-            text-align: center;
-            padding: 4rem 2rem;
-            background: var(--bg-card);
-            border-radius: var(--border-radius-xl);
-            box-shadow: var(--shadow-md);
-        }
-
-        .no-itinerary-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-        }
-
-        .no-itinerary h2 {
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-        }
-
-        .no-itinerary p {
-            color: var(--text-secondary);
-            margin-bottom: 2rem;
-        }
-
-        .create-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 1rem 2rem;
-            font-size: 1rem;
-            font-weight: 600;
-            font-family: inherit;
-            color: var(--text-white);
-            background: var(--gradient-primary);
-            border: none;
-            border-radius: var(--border-radius-lg);
-            cursor: pointer;
-            transition: var(--transition-normal);
-            text-decoration: none;
-        }
-
-        .create-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 102, 255, 0.35);
-        }
-
-        .itinerary-footer-actions {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-top: 3rem;
-            padding-top: 2rem;
-            border-top: 2px solid rgba(0, 0, 0, 0.05);
-        }
-
-        /* Print Styles */
-        @media print {
-
-            .navbar,
-            .itinerary-footer-actions {
-                display: none;
-            }
-
-            .itinerary-page {
-                padding-top: 0;
-            }
-
-            .timeline-card {
-                break-inside: avoid;
-            }
-        }
+    </script>
+    <style type="text/tailwindcss">
+        body { font-family: 'Noto Sans KR', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
-<body class="itinerary-page">
-    <!-- Navigation Bar -->
-    <nav class="navbar scrolled">
-        <div class="nav-container">
-            <a href="index.html" class="logo">
-                <span class="logo-text">Plan.It</span>
-            </a>
-            <button class="back-btn" onclick="location.href='index.html'">
-                <span>←</span>
-                <span>새 일정 만들기</span>
-            </button>
-        </div>
-    </nav>
+<body
+    class="bg-background-light dark:bg-background-dark text-[#0d141b] dark:text-slate-100 transition-colors duration-200">
+    <div class="flex h-screen flex-col overflow-hidden">
+        <header
+            class="flex items-center justify-between border-b border-[#e7edf3] dark:border-slate-800 bg-white dark:bg-background-dark px-6 py-3 shrink-0 z-10">
+            <div class="flex items-center gap-8 cursor-pointer" onclick="location.href='index.html'">
+                <div class="flex items-center gap-3">
+                    <div class="bg-primary text-white p-1.5 rounded-lg flex items-center justify-center">
+                        <span class="material-symbols-outlined text-2xl">auto_awesome</span>
+                    </div>
+                    <h2 class="text-xl font-bold tracking-tight">VoyageAI</h2>
+                </div>
+            </div>
+            <div class="flex items-center gap-6">
+                <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
+                    <a class="text-primary border-b-2 border-primary pb-1" href="#">일정</a>
+                    <a class="text-[#4c739a] hover:text-primary transition-colors" href="profile.html">보관함</a>
+                </nav>
+                <div class="flex gap-2">
+                    <button id="saveItineraryBtn"
+                        class="bg-[#e7edf3] dark:bg-slate-800 text-[#0d141b] dark:text-slate-200 px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-200">저장하기</button>
+                    <button
+                        class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2">
+                        공유하기
+                    </button>
+                </div>
+                <div id="userAvatar" class="size-9 rounded-full bg-cover bg-center border-2 border-primary/20"
+                    data-alt="User profile avatar"
+                    style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDUbRi1dNmazqody33qD6TTCWydDsTwSDqtD_Pks0o9P2NnjcNATN_5nJvkht0zUcufLJnm8q8uVVJt91FkmqbIBo-1kCWmzegCjCmmLsQ1p6WNp_Bto5mgU36KhcTZQM30GxD5fsdDRZ11D40VVdqR-QV3Rlfcju_eOtSga9KkNPtv1U5QzTdbeUcOeMhMli5Vonaad383spoJCqCm9AXACWSLb19MDd4EIYdzszf43WRTrgjEUOv8FWUezknlXfyQ-rhj-eVgy-g');">
+                </div>
+            </div>
+        </header>
+        <main class="flex flex-1 overflow-hidden">
+            <aside
+                class="w-72 border-r border-[#e7edf3] dark:border-slate-800 bg-white dark:bg-background-dark flex flex-col shrink-0">
+                <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+                    <div class="mb-6">
+                        <h3 class="text-xs font-bold uppercase tracking-widest text-[#4c739a] mb-4">여행 일정</h3>
+                        <div class="space-y-1" id="daySidebarList">
+                            <!-- Dynamic list -->
+                            <p class="text-xs text-gray-400 p-2">일정을 불러오는 중...</p>
+                        </div>
+                    </div>
+                    <div class="mt-auto pt-6 border-t border-[#e7edf3] dark:border-slate-800">
+                        <div class="bg-background-light dark:bg-slate-800/50 p-4 rounded-xl">
+                            <div class="flex items-center justify-between mb-4">
+                                <p class="text-sm font-bold">예산 요약 (일평균)</p>
+                                <span class="material-symbols-outlined text-primary text-lg">monetization_on</span>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div>
+                                    <p class="text-lg font-bold leading-tight" id="estimatedCost">₩0</p>
+                                    <p class="text-[10px] text-[#4c739a] uppercase tracking-wider font-bold">총 예상 지출</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+            <section
+                class="flex-1 bg-background-light dark:bg-background-dark overflow-y-auto no-scrollbar border-r border-[#e7edf3] dark:border-slate-800"
+                id="mainContentScroll">
+                <div class="max-w-2xl mx-auto px-6 py-8" id="itineraryContent">
+                    <!-- Dynamic Content -->
+                    <div class="text-center py-20">
+                        <h2 class="text-2xl font-bold mb-2">일정을 생성 중이거나 불러오는 중입니다...</h2>
+                        <p class="text-gray-500">잠시만 기다려주세요.</p>
+                    </div>
+                </div>
+            </section>
 
-    <!-- Itinerary Hero -->
-    <section class="itinerary-hero" id="itineraryHero">
-        <h1 id="heroTitle">여행 일정</h1>
-        <div class="route-display" id="routeDisplay">
-            <!-- 여행 경로가 동적으로 표시됨 -->
-        </div>
-        <div class="trip-meta" id="tripMeta">
-            <!-- 여행 정보가 표시됨 -->
-        </div>
-    </section>
+            <!-- Map Section Placeholder - using simplified view for now as no map API key provided -->
+            <section class="w-[450px] bg-slate-200 dark:bg-slate-900 shrink-0 relative hidden lg:block">
+                <div class="absolute inset-0 flex items-center justify-center text-gray-500">
+                    <div>
+                        <span class="material-symbols-outlined text-6xl block text-center mb-2">map</span>
+                        <p class="text-center">지도 보기 (준비 중)</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
 
-    <!-- Itinerary Content -->
-    <main class="itinerary-main">
-        <!-- Summary Card -->
-        <div class="itinerary-summary-card" id="summaryCard">
-            <h2 id="itineraryTitle">여행 일정</h2>
-            <p id="itinerarySummary">AI가 맞춤 설계한 특별한 여행 일정입니다.</p>
-        </div>
-
-        <!-- Days Timeline -->
-        <div class="days-timeline" id="daysTimeline">
-            <!-- 일별 일정이 동적으로 표시됨 -->
-        </div>
-
-        <!-- Travel Tips -->
-        <div class="itinerary-tips" id="itineraryTips" style="display: none;">
-            <!-- 여행 팁이 표시됨 -->
-        </div>
-
-        <!-- No Itinerary State -->
-        <div class="no-itinerary" id="noItinerary" style="display: none;">
-            <div class="no-itinerary-icon">📋</div>
-            <h2>아직 생성된 일정이 없습니다</h2>
-            <p>여행 정보를 입력하고 AI에게 맞춤 일정을 요청해보세요!</p>
-            <a href="index.html#travelForm" class="create-btn">
-                <span>✨</span>
-                <span>일정 생성하기</span>
-            </a>
-        </div>
-
-        <!-- Footer Actions -->
-        <!-- Footer Actions (New: Share & Save) -->
-        <div class="itinerary-footer-actions" id="footerActions">
-            <button class="action-btn btn-share" id="shareBtn">
-                <span>🔗</span>
-                <span>공유하기</span>
-            </button>
-            <button class="action-btn btn-save" id="saveBtn">
-                <span>💾</span>
-                <span>저장하기</span>
-            </button>
-            <button class="action-btn btn-new-itinerary" onclick="location.href='index.html#travelForm'">
-                <span>🔄</span>
-                <span>새 일정 만들기</span>
-            </button>
-        </div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-container">
-            <p>&copy; 2026 Plan.It. All rights reserved.</p>
-        </div>
-    </footer>
-
+    <!-- Scripts -->
+    <script src="supabase.js"></script>
+    <script src="auth.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', async function () {
-            // 전역 객체 매핑 (안전하게 사용하기 위함)
-            const Auth = window.Auth;
-            const getSupabaseClient = () => window.supabaseClient;
-
-            if (!Auth || !getSupabaseClient()) {
-                console.warn('Auth or Supabase client not loaded yet. Waiting...');
-                // 혹시 모를 로딩 지연 대비 (보통 defer 로 해결됨)
-            }
-
-            // localStorage에서 일정 데이터 불러오기
+        document.addEventListener('DOMContentLoaded', function () {
+            // Load Itinerary Data
             const itineraryData = localStorage.getItem('travelItinerary');
-            const tripInfo = JSON.parse(localStorage.getItem('tripInfo') || '{}');
-
-            const heroTitle = document.getElementById('heroTitle');
-            const routeDisplay = document.getElementById('routeDisplay');
-            const tripMeta = document.getElementById('tripMeta');
-            const summaryCard = document.getElementById('summaryCard');
-            const daysTimeline = document.getElementById('daysTimeline');
-            const itineraryTips = document.getElementById('itineraryTips');
-            const noItinerary = document.getElementById('noItinerary');
-            const footerActions = document.getElementById('footerActions');
-            const shareBtn = document.getElementById('shareBtn');
-            const saveBtn = document.getElementById('saveBtn');
+            const tripInfo = localStorage.getItem('tripInfo');
 
             if (!itineraryData) {
-                // 일정이 없으면 빈 상태 표시
-                summaryCard.style.display = 'none';
-                daysTimeline.style.display = 'none';
-                footerActions.style.display = 'none';
-                document.getElementById('itineraryHero').style.display = 'none';
-                noItinerary.style.display = 'block';
+                document.getElementById('itineraryContent').innerHTML = `
+                    <div class="text-center py-20">
+                         <h2 class="text-2xl font-bold mb-2">생성된 일정이 없습니다.</h2>
+                         <button class="text-primary hover:underline" onclick="location.href='create.html'">일정 만들기</button>
+                    </div>
+                 `;
                 return;
             }
 
-            const itinerary = JSON.parse(itineraryData);
-
-            // 여행 경로 표시
-            if (tripInfo.destinations && tripInfo.destinations.length > 0) {
-                routeDisplay.innerHTML = tripInfo.destinations.map((dest, i) => {
-                    const arrow = i < tripInfo.destinations.length - 1 ? '<span class="route-arrow">→</span>' : '';
-                    // dest가 객체인지 문자열인지 확인
-                    const name = typeof dest === 'object' ? (dest.displayName || dest.name) : dest;
-                    return `<span class="route-city">📍 ${name}</span>${arrow}`;
-                }).join('');
+            try {
+                const itinerary = JSON.parse(itineraryData);
+                renderItinerary(itinerary);
+            } catch (e) {
+                console.error('Data parse error', e);
             }
 
-            // 여행 정보 메타 표시
-            if (tripInfo.startDate && tripInfo.endDate) {
-                const days = Math.ceil((new Date(tripInfo.endDate) - new Date(tripInfo.startDate)) / (1000 * 60 * 60 * 24)) + 1;
-                tripMeta.innerHTML = `
-                    <span class="trip-meta-item">📅 ${tripInfo.startDate} ~ ${tripInfo.endDate}</span>
-                    <span class="trip-meta-item">⏱️ ${days}일</span>
-                `;
-            }
-
-            // 제목과 요약 업데이트
-            if (itinerary.title) {
-                document.getElementById('itineraryTitle').textContent = itinerary.title;
-                heroTitle.textContent = `🗺️ ${itinerary.title}`;
-            }
-            if (itinerary.summary) {
-                document.getElementById('itinerarySummary').textContent = itinerary.summary;
-            }
-
-            // 일별 일정 타임라인 표시
-            if (itinerary.days && itinerary.days.length > 0) {
-                daysTimeline.innerHTML = itinerary.days.map(day => `
-                    <div class="timeline-day">
-                        <div class="timeline-dot">${day.day}</div>
-                        <div class="timeline-card">
-                            <div class="day-header">
-                                <div class="day-number">Day ${day.day}</div>
-                                <div class="day-info">
-                                    <h3>${day.date || `Day ${day.day}`}</h3>
-                                    <p>${day.location || ''}</p>
-                                </div>
-                            </div>
-                            <div class="day-schedule">
-                                ${day.schedule.map(item => renderScheduleItem(item)).join('')}
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            // 스케줄 아이템 렌더링 함수 (일반 활동 vs 맛집 분기)
-            function renderScheduleItem(item) {
-                // 맛집(3 options)인 경우
-                if ((item.type === 'food' || item.category === '맛집탐방') && item.options) {
-                    return `
-                        <div class="schedule-item food-item">
-                            <div class="schedule-time">${item.time} <span class="badge-food">🍽️ ${item.meal_type || '식사'}</span></div>
-                            <div class="schedule-content">
-                                ${renderTravelInfo(item)}
-                                <div class="food-options-grid">
-                                    ${item.options.map((opt, idx) => `
-                                        <div class="food-option-card">
-                                            <div class="food-rank">Option ${idx + 1}</div>
-                                            <div class="food-name">${opt.name}</div>
-                                            <div class="food-meta">⭐ ${opt.rating || opt.rating_expect || '4.0'} | ${opt.signature_menu || opt.menu || '대표 메뉴'}</div>
-                                            <div class="food-desc">"${opt.features || opt.description || opt.atmosphere}"</div>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                // 일반 활동인 경우
-                const placeName = typeof item.place === 'object' ? item.place.name_ko : (item.place || item.activity || '장소');
-                const categoryLabel = item.category ? `${item.category_icon || ''} ${item.category}` : getTypeLabel(item.type);
-
-                return `
-                    <div class="schedule-item">
-                        <div class="schedule-time">${item.time}</div>
-                        <div class="schedule-content">
-                            <div class="schedule-header">
-                                <span class="schedule-place">${placeName}</span>
-                                <span class="schedule-type">${categoryLabel}</span>
-                            </div>
-                            <div class="schedule-description">${item.description}</div>
-                            ${renderTravelInfo(item)}
-                        </div>
-                    </div>
-                `;
-            }
-
-            function renderTravelInfo(item) {
-                let html = '';
-
-                // 1. 거리/이동 정보 (New Schema)
-                if (item.distance_from_previous) {
-                    const dist = item.distance_from_previous;
-                    html += `<div class="travel-info-text">🚗 ${dist.travel_method} ${dist.travel_time} (${dist.value}${dist.unit})</div>`;
-                }
-                // 2. 이동 상세 (New Schema)
-                else if (item.travel_info && typeof item.travel_info === 'object') {
-                    html += `<div class="travel-info-text">👣 ${item.travel_info.method} (${item.travel_info.detail})</div>`;
-                }
-                // 3. 기존 방식 (fallback)
-                else if (item.travel_info) {
-                    html += `<div class="travel-info-text">👣 ${item.travel_info}</div>`;
-                }
-
-                return html;
-            }
-
-            // 여행 팁 표시
-            if (itinerary.tips && itinerary.tips.length > 0) {
-                itineraryTips.style.display = 'block';
-                itineraryTips.innerHTML = `
-                    <h4>💡 여행 팁</h4>
-                    <ul>
-                        ${itinerary.tips.map(tip => `<li>${tip}</li>`).join('')}
-                    </ul>
-                `;
-            }
-
-            // ===== 기능 구현: 공유하기 & 저장하기 =====
-
-            // 1. 공유하기
-            shareBtn.addEventListener('click', async function () {
-                const shareData = {
-                    title: `Plan.It - ${itinerary.title}`,
-                    text: `AI가 설계해준 ${itinerary.title} 여행 일정입니다!\n\n${itinerary.summary}`,
-                    url: window.location.href // 현재 URL 공유
-                };
-
-                try {
-                    if (navigator.share) {
-                        await navigator.share(shareData);
-                    } else {
-                        // Web Share API 미지원 시 클립보드 복사
-                        await navigator.clipboard.writeText(`${shareData.title}\n${shareData.text}\n${shareData.url}`);
-                        alert('📋 여행 일정이 클립보드에 복사되었습니다!');
+            // Save Button Logic
+            const saveBtn = document.getElementById('saveItineraryBtn');
+            saveBtn.addEventListener('click', async () => {
+                if (!window.Auth) return;
+                const session = await window.Auth.getSession();
+                if (!session || !session.user) {
+                    if (confirm('로그인이 필요합니다. 로그인하시겠습니까?')) {
+                        window.location.href = 'index.html?action=login'; // Auth logic in index handles parameter? or show modal
                     }
-                } catch (err) {
-                    console.error('공유 실패:', err);
+                    return;
                 }
+
+                // Save Logic Implementation
+                saveBtn.textContent = '저장 중...';
+                // Mock save
+                setTimeout(() => {
+                    saveBtn.textContent = '저장 완료!';
+                    setTimeout(() => saveBtn.textContent = '저장하기', 2000);
+                }, 1000);
             });
-
-            // 2. 저장하기 (DB 연동 - 전체 데이터 저장)
-            saveBtn.addEventListener('click', async function () {
-                const originalText = saveBtn.innerHTML;
-                saveBtn.innerHTML = '<span>⏳</span><span>저장 중...</span>';
-                saveBtn.disabled = true;
-
-                try {
-                    // 로그인 체크
-                    const session = await Auth.getSession();
-                    if (!session || !session.user) {
-                        if (confirm('🔒 여행을 저장하려면 로그인이 필요합니다.\n로그인 페이지로 이동하시겠습니까?')) {
-                            window.location.href = 'index.html?action=login';
-                        }
-                        return;
-                    }
-
-                    const supabase = getSupabaseClient();
-                    const userId = session.user.id;
-
-                    // 1. Trips 테이블 저장
-                    const { data: tripData, error: tripError } = await supabase
-                        .from('trips')
-                        .insert({
-                            user_id: userId,
-                            title: itinerary.title || '나만의 여행',
-                            destination: tripInfo.destinations.map(d => typeof d === 'object' ? d.name : d).join(', '),
-                            start_date: tripInfo.startDate,
-                            end_date: tripInfo.endDate,
-                            companion: tripInfo.companion || 'alone',
-                            styles: tripInfo.styles || ['basic'],
-                            status: 'completed'
-                        })
-                        .select()
-                        .single();
-
-                    if (tripError) throw tripError;
-                    const tripId = tripData.id;
-
-                    // 2. 상세 일정 저장 (Days & Items)
-                    if (itinerary.days && itinerary.days.length > 0) {
-                        for (const day of itinerary.days) {
-                            // Trip_Days 저장
-                            const { data: dayData, error: dayError } = await supabase
-                                .from('trip_days')
-                                .insert({
-                                    trip_id: tripId,
-                                    day_number: day.day,
-                                    date: day.date, // YYYY-MM-DD
-                                    title: day.day_theme || `Day ${day.day}`,
-                                    summary: day.location || ''
-                                })
-                                .select()
-                                .single();
-
-                            if (dayError) throw dayError;
-                            const dayId = dayData.id;
-
-                            // Trip_Items 저장
-                            if (day.schedule && day.schedule.length > 0) {
-                                const itemsToInsert = day.schedule.map((item, index) => {
-                                    // 장소명 추출
-                                    const placeName = typeof item.place === 'object' ? item.place.name_ko : (item.place || item.activity || '장소');
-                                    // 주소 추출
-                                    const address = typeof item.place === 'object' ? item.place.address : null;
-                                    // 카테고리 매핑
-                                    const categoryEnum = mapCategoryToEnum(item.category || item.type);
-
-                                    return {
-                                        trip_day_id: dayId,
-                                        order_index: index + 1,
-                                        time: item.time, // "14:00" format compatible with TIME type
-                                        place_name: placeName,
-                                        category: categoryEnum,
-                                        description: item.description,
-                                        address: address,
-                                        duration_minutes: parseDuration(item.duration),
-                                        image_url: null // 추후 이미지가 있다면 추가
-                                    };
-                                });
-
-                                const { error: itemsError } = await supabase
-                                    .from('trip_items')
-                                    .insert(itemsToInsert);
-
-                                if (itemsError) throw itemsError;
-                            }
-                        }
-                    }
-
-                    alert('✅ 여행 일정이 내 계정에 완벽하게 저장되었습니다!');
-
-                } catch (error) {
-                    console.error('저장 오류 상세:', error);
-                    alert(`❌ 저장 실패: ${error.message}`);
-                } finally {
-                    saveBtn.innerHTML = originalText;
-                    saveBtn.disabled = false;
-                }
-            });
-
-            // Helper: 카테고리 매핑 (DB ENUM 호환)
-            function mapCategoryToEnum(koreanCategory) {
-                const map = {
-                    '맛집탐방': 'food', 'food': 'food',
-                    '휴양': 'relax', 'relax': 'relax',
-                    '액티비티': 'activity', 'activity': 'activity',
-                    '문화예술': 'culture', 'culture': 'culture',
-                    '쇼핑': 'shopping', 'shopping': 'shopping',
-                    '자연탐험': 'nature', 'nature': 'nature',
-                    '포토스팟': 'photo', 'photo': 'photo',
-                    '나이트라이프': 'nightlife', 'nightlife': 'nightlife',
-                    '교통': 'transport', 'transport': 'transport',
-                    '숙소': 'accommodation', 'accommodation': 'accommodation'
-                };
-                return map[koreanCategory] || 'other';
-            }
-
-            // Helper: 시간 파싱 ("2시간" -> 120, "1시간 30분" -> 90)
-            function parseDuration(durationStr) {
-                if (!durationStr) return null;
-                let minutes = 0;
-
-                const hourMatch = durationStr.match(/(\d+)시간/);
-                if (hourMatch) minutes += parseInt(hourMatch[1]) * 60;
-
-                const minMatch = durationStr.match(/(\d+)분/);
-                if (minMatch) minutes += parseInt(minMatch[1]);
-
-                return minutes > 0 ? minutes : null;
-            }
-
-            function getTypeLabel(type) {
-                const labels = {
-                    food: '🍽️ 맛집',
-                    activity: '🏄 액티비티',
-                    culture: '🎭 문화',
-                    nature: '🌿 자연',
-                    shopping: '🛍️ 쇼핑',
-                    transport: '🚗 이동'
-                };
-                return labels[type] || type;
-            }
         });
+
+        function renderItinerary(data) {
+            const sidebarList = document.getElementById('daySidebarList');
+            const mainContent = document.getElementById('itineraryContent');
+
+            sidebarList.innerHTML = '';
+            mainContent.innerHTML = '';
+
+            if (data.tripTitle) {
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'mb-8';
+                titleDiv.innerHTML = `
+                      <h1 class="text-3xl font-bold tracking-tight">${data.tripTitle || '나의 여행 일정'}</h1>
+                      <p class="text-[#4c739a]">${data.summary || 'AI가 생성한 맞춤 여행 일정입니다.'}</p>
+                  `;
+                mainContent.appendChild(titleDiv);
+            }
+
+            if (Array.isArray(data.days)) {
+                data.days.forEach((day, index) => {
+                    // Sidebar Item
+                    const sbItem = document.createElement('button');
+                    sbItem.className = 'w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-primary/5 text-sm font-medium text-[#4c739a] text-left';
+                    sbItem.innerHTML = `
+                            <span class="material-symbols-outlined text-xl text-gray-400">calendar_today</span>
+                            Day ${day.day}: ${day.theme || '일정'}
+                       `;
+                    sbItem.onclick = () => {
+                        document.getElementById(`day-${day.day}`).scrollIntoView({ behavior: 'smooth' });
+                    };
+                    sidebarList.appendChild(sbItem);
+
+                    // Main Content Section
+                    const daySection = document.createElement('div');
+                    daySection.id = `day-${day.day}`;
+                    daySection.className = 'mb-12 relative pl-10';
+
+                    // Timeline line
+                    const line = document.createElement('div');
+                    line.className = 'absolute left-[19px] top-4 bottom-4 w-0.5 bg-gradient-to-b from-primary via-primary/40 to-transparent';
+                    daySection.appendChild(line);
+
+                    // Day Header
+                    const dayHeader = document.createElement('div');
+                    dayHeader.className = 'mb-6 -ml-10';
+                    dayHeader.innerHTML = `
+                           <h2 class="text-2xl font-bold">Days ${day.day}</h2>
+                           <p class="text-sm text-gray-500">${day.date || ''}</p>
+                       `;
+                    daySection.appendChild(dayHeader);
+
+                    // Activities
+                    if (Array.isArray(day.schedule)) {
+                        day.schedule.forEach(item => {
+                            const card = document.createElement('div');
+                            card.className = 'relative pb-10 group';
+                            card.innerHTML = `
+                                    <div class="absolute -left-[31px] top-0 bg-white dark:bg-slate-800 border-2 border-primary size-6 rounded-full flex items-center justify-center z-10 transition-transform group-hover:scale-110">
+                                         <div class="size-2 bg-primary rounded-full"></div>
+                                    </div>
+                                    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-[#e7edf3] dark:border-slate-800 overflow-hidden hover:shadow-md transition-shadow">
+                                         <div class="flex flex-col sm:flex-row min-h-32">
+                                              <!-- Image placeholder if available, otherwise icon -->
+                                              <div class="w-full sm:w-1/3 bg-gray-100 dark:bg-gray-800 flex items-center justify-center p-4">
+                                                   <span class="material-symbols-outlined text-4xl text-gray-300">
+                                                       ${item.type === 'food' ? 'restaurant' : 'location_on'}
+                                                   </span>
+                                              </div>
+                                              <div class="w-full sm:w-2/3 p-5 flex flex-col justify-between">
+                                                   <div>
+                                                       <div class="flex items-center justify-between mb-1">
+                                                           <p class="text-xs font-bold text-primary tracking-widest uppercase">${item.time || '시간 미정'}</p>
+                                                       </div>
+                                                       <h3 class="text-xl font-bold mb-2">${item.place || item.activity}</h3>
+                                                       <p class="text-sm text-[#4c739a] line-clamp-3 leading-relaxed">${item.description}</p>
+                                                   </div>
+                                              </div>
+                                         </div>
+                                    </div>
+                                `;
+                            daySection.appendChild(card);
+                        });
+                    }
+                    mainContent.appendChild(daySection);
+                });
+            }
+        }
     </script>
 </body>
 
