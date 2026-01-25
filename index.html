@@ -113,17 +113,24 @@
                     당신의 취향, 예산, 그리고 꿈꾸던 순간을 단 몇 초 만에 완벽한 일정으로 만들어 드립니다.
                 </p>
                 <div
-                    class="w-full max-w-4xl bg-white dark:bg-background-dark p-2 rounded-xl shadow-2xl flex flex-col md:flex-row items-stretch gap-2">
-                    <div class="flex-1 flex items-center px-4 gap-3 border-r border-slate-100 dark:border-slate-800">
+                    class="w-full max-w-4xl bg-white dark:bg-slate-800 p-2 rounded-xl shadow-2xl flex flex-col md:flex-row items-stretch gap-2 relative">
+                    <div
+                        class="flex-1 flex items-center px-4 gap-3 border-r border-slate-100 dark:border-slate-700 relative">
                         <span class="material-symbols-outlined text-slate-400">location_on</span>
-                        <input id="landingDestination"
+                        <input id="heroDestination"
                             class="w-full bg-transparent border-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 py-4"
-                            placeholder="어디로 떠나시나요? (예: 산토리니, 교토)" type="text" />
+                            placeholder="어디로 떠나시나요? (예: 산토리니, 교토)" type="text" autocomplete="off" />
+                        <!-- Suggestions Container -->
+                        <div
+                            class="hero-suggestions absolute top-full left-0 w-full bg-white dark:bg-slate-800 rounded-xl shadow-xl mt-2 overflow-hidden z-50 hidden">
+                        </div>
                     </div>
-                    <div class="flex-1 flex items-center px-4 gap-3 border-r border-slate-100 dark:border-slate-800">
+                    <div class="flex-1 flex items-center px-4 gap-3 border-r border-slate-100 dark:border-slate-700">
                         <span class="material-symbols-outlined text-slate-400">calendar_month</span>
-                        <input id="landingStartDate" type="date"
+                        <input id="heroStartDate" type="date"
                             class="w-full bg-transparent border-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 py-4" />
+                        <!-- Hidden End Date for compatibility -->
+                        <input id="heroEndDate" type="date" class="hidden" />
                     </div>
                     <div class="flex-1 flex items-center px-4 gap-3">
                         <span class="material-symbols-outlined text-slate-400">person</span>
@@ -131,11 +138,12 @@
                             class="w-full bg-transparent border-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 py-4"
                             placeholder="인원수" type="text" />
                     </div>
-                    <button id="landingGenerateBtn"
+                    <button id="heroSearchBtn"
                         class="bg-primary text-white px-8 py-4 rounded-lg font-bold hover:bg-primary/90 transition-all flex items-center justify-center gap-2 whitespace-nowrap">
                         <span class="material-symbols-outlined">auto_awesome</span>
                         일정 생성하기
                     </button>
+                    <!-- Form Wrapper for compatibility if script.js expects it, though script.js uses getElementById('heroSearchForm') which might not exist here. Check script.js: it checks if(heroSearchForm). We can wrap this div in a form id="heroSearchForm" OR just rely on button ID since script.js has btn click listener too. Step 187 showed: if(heroSearchBtn) addEventListener. So just button ID is enough. -->
                 </div>
             </div>
         </div>
@@ -325,28 +333,13 @@
     </footer>
 
     <!-- Scripts -->
+    <script src="script.js"></script>
     <script src="supabase.js"></script>
     <script src="auth.js"></script>
+    <script src="auth-ui.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Landing Page Logic for search redirection
-            const landingGenerateBtn = document.getElementById('landingGenerateBtn');
-            const landingDestination = document.getElementById('landingDestination');
-            const landingStartDate = document.getElementById('landingStartDate');
-
-            if (landingGenerateBtn) {
-                landingGenerateBtn.addEventListener('click', function () {
-                    const destination = landingDestination.value.trim();
-                    const startDate = landingStartDate.value;
-
-                    let queryParams = new URLSearchParams();
-                    if (destination) queryParams.set('destination', destination);
-                    if (startDate) queryParams.set('startDate', startDate);
-
-                    window.location.href = `create.html?${queryParams.toString()}`;
-                });
-            }
-        });
+        // Inline script cleaned up. Logic moved to script.js and auth-ui.js
+        console.log('VoyageAI Initialized');
     </script>
 </body>
 
