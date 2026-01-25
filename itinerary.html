@@ -81,9 +81,17 @@
                         공유하기
                     </button>
                 </div>
-                <div id="userAvatar" class="size-9 rounded-full bg-cover bg-center border-2 border-primary/20"
-                    data-alt="User profile avatar"
-                    style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDUbRi1dNmazqody33qD6TTCWydDsTwSDqtD_Pks0o9P2NnjcNATN_5nJvkht0zUcufLJnm8q8uVVJt91FkmqbIBo-1kCWmzegCjCmmLsQ1p6WNp_Bto5mgU36KhcTZQM30GxD5fsdDRZ11D40VVdqR-QV3Rlfcju_eOtSga9KkNPtv1U5QzTdbeUcOeMhMli5Vonaad383spoJCqCm9AXACWSLb19MDd4EIYdzszf43WRTrgjEUOv8FWUezknlXfyQ-rhj-eVgy-g');">
+
+                <!-- Auth UI -->
+                <div id="authButtons">
+                    <button id="loginBtn" class="text-sm font-bold text-gray-700 hover:text-primary">로그인</button>
+                </div>
+                <div id="userProfile" style="display: none;" class="flex items-center gap-3">
+                    <div id="userAvatar"
+                        class="size-9 rounded-full bg-cover bg-center border-2 border-primary/20 user-avatar-display"
+                        style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDUbRi1dNmazqody33qD6TTCWydDsTwSDqtD_Pks0o9P2NnjcNATN_5nJvkht0zUcufLJnm8q8uVVJt91FkmqbIBo-1kCWmzegCjCmmLsQ1p6WNp_Bto5mgU36KhcTZQM30GxD5fsdDRZ11D40VVdqR-QV3Rlfcju_eOtSga9KkNPtv1U5QzTdbeUcOeMhMli5Vonaad383spoJCqCm9AXACWSLb19MDd4EIYdzszf43WRTrgjEUOv8FWUezknlXfyQ-rhj-eVgy-g');">
+                    </div>
+                    <button id="logoutBtn" class="text-xs text-gray-500 hover:text-primary">로그아웃</button>
                 </div>
             </div>
         </header>
@@ -141,6 +149,7 @@
     <!-- Scripts -->
     <script src="supabase.js"></script>
     <script src="auth.js"></script>
+    <script src="auth-ui.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // Load Itinerary Data
@@ -178,11 +187,88 @@
 
                 // Save Logic Implementation
                 saveBtn.textContent = '저장 중...';
-                // Mock save
-                setTimeout(() => {
+                saveBtn.disabled = true;
+
+                try {
+                    const itinerary = JSON.parse(localStorage.getItem('travelItinerary'));
+                    const tripInfo = JSON.parse(localStorage.getItem('tripInfo'));
+
+                    if (!itinerary || !tripInfo) throw new Error('저장할 일정 데이터가 없습니다.');
+
+                    const client = window.supabaseClient;
+                    if (!client) throw new Error('DB 연결 오류');
+
+                    // 1. Insert Trip
+                    const { data: tripData, error: tripError } = await client
+                        .from('trips')
+                        .insert({
+                            user_id: session.user.id,
+                            title: itinerary.title || `${tripInfo.destinations[0]} 여행`,
+                            destination: tripInfo.destinations.join(', '),
+                            start_date: tripInfo.startDate,
+                            end_date: tripInfo.endDate,
+                            companion_type: tripInfo.companion === 'friends' ? 'friends' :
+                                tripInfo.companion === 'couple' ? 'couple' :
+                                    tripInfo.companion === 'family' ? 'family' : 'alone',
+                            travel_style: tripInfo.styles,
+                            // budget_level mapping needs to be handled if DB requires specific enum, assuming text for now or mapped previously
+                            budget_level: 'mid' // Default or map from tripInfo if available
+                        })
+                        .select()
+                        .single();
+
+                    if (tripError) throw tripError;
+
+                    const tripId = tripData.id;
+
+                    // 2. Insert Days & Items
+                    if (itinerary.days && itinerary.days.length > 0) {
+                        for (const day of itinerary.days) {
+                            // Insert Day
+                            const { data: dayData, error: dayError } = await client
+                                .from('trip_days')
+                                .insert({
+                                    trip_id: tripId,
+                                    day_number: day.day,
+                                    date: day.date,
+                                    title: day.theme,
+                                    summary: day.day_theme
+                                })
+                                .select()
+                                .single();
+
+                            if (dayError) throw dayError;
+
+                            // Insert Items
+                            if (day.schedule && day.schedule.length > 0) {
+                                const itemsPayload = day.schedule.map(item => ({
+                                    trip_day_id: dayData.id,
+                                    place_name: item.place?.name_ko || item.place || item.activity, // Handle various formats
+                                    category: item.category,
+                                    description: item.description,
+                                    address: item.place?.address || '',
+                                    duration_minutes: 60, // Default or parse from item.duration
+                                    image_url: '' // Future enhancement
+                                }));
+
+                                const { error: itemsError } = await client
+                                    .from('trip_items')
+                                    .insert(itemsPayload);
+
+                                if (itemsError) throw itemsError;
+                            }
+                        }
+                    }
+
                     saveBtn.textContent = '저장 완료!';
-                    setTimeout(() => saveBtn.textContent = '저장하기', 2000);
-                }, 1000);
+                    alert('일정이 성공적으로 저장되었습니다!');
+
+                } catch (err) {
+                    console.error('Save failed:', err);
+                    alert('저장 실패: ' + err.message);
+                    saveBtn.textContent = '저장하기';
+                    saveBtn.disabled = false;
+                }
             });
         });
 

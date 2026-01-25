@@ -131,23 +131,72 @@
     <!-- Scripts -->
     <script src="supabase.js"></script>
     <script src="auth.js"></script>
+    <script src="auth-ui.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async function () {
             // Auth check
             if (window.Auth) {
                 const session = await window.Auth.getSession();
-                if (session && session.user) {
-                    document.getElementById('profileNickname').textContent = session.user.email.split('@')[0]; // Simple nickname
-                    document.getElementById('profileEmail').textContent = session.user.email;
-
-                    // Load trips from DB (Note: function needs to exist in auth.js or script.js)
-                    // For now, let's just show a message or valid placeholder
-                } else {
-                    // Not logged in
+                if (!session || !session.user) {
                     if (confirm('로그인이 필요합니다.')) {
                         window.location.href = 'index.html';
                     }
+                    return;
                 }
+
+                // 2. Fetch Trips
+                const client = window.supabaseClient;
+                const { data: trips, error } = await client
+                    .from('trips')
+                    .select('*')
+                    .eq('user_id', session.user.id)
+                    .order('created_at', { ascending: false });
+
+                const listContainer = document.getElementById('savedTripsList');
+                listContainer.innerHTML = '';
+
+                if (error) {
+                    console.error(error);
+                    listContainer.innerHTML = '<div class="col-span-full text-center text-red-500">일정을 불러오지 못했습니다.</div>';
+                    return;
+                }
+
+                if (!trips || trips.length === 0) {
+                    listContainer.innerHTML = '<div class="col-span-full text-center py-10 text-gray-500">아직 저장된 여행 일정이 없습니다.</div>';
+                    return;
+                }
+
+                // 3. Render Trips
+                trips.forEach(trip => {
+                    const card = document.createElement('div');
+                    card.className = "group relative overflow-hidden rounded-xl aspect-[3/4] cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-white dark:bg-slate-900";
+                    // Random placeholder image or based on destination
+                    const bgImage = "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=2070&auto=format&fit=crop";
+
+                    card.innerHTML = `
+                         <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                            style='background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 50%), url("${bgImage}");'>
+                        </div>
+                        <div class="absolute bottom-0 left-0 p-6 w-full">
+                            <div class="flex justify-between items-end">
+                                <div>
+                                    <p class="text-white text-xl font-bold mb-1">${trip.title || '여행 일정'}</p>
+                                    <p class="text-white/80 text-sm">${trip.destination}</p>
+                                    <div class="flex items-center gap-1 mt-2">
+                                        <span class="material-symbols-outlined text-sm text-white/90">calendar_today</span>
+                                        <span class="text-sm font-medium text-white/90">${trip.start_date} ~ ${trip.end_date}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    // Redirect to itinerary view (passing ID would be needed in future, currently just static view or load logic)
+                    // For now, simple alert or reload (real implementation needs a way to view specific trip)
+                    card.onclick = () => {
+                        alert('상세 보기 기능은 준비 중입니다.');
+                    };
+                    listContainer.appendChild(card);
+                });
             }
         });
     </script>
