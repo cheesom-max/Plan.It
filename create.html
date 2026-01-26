@@ -713,10 +713,24 @@
                 // Prepare API Payload (Simulation utilizing existing server endpoint if possible, or direct API call)
                 // Since this is client side, we should call our server endpoint.
 
+                // Debugging logs
+                console.log('Sending request to /api/generate-itinerary');
+                console.log('Payload:', {
+                    destinations: [destination],
+                    startDate,
+                    endDate,
+                    companion,
+                    style: styles,
+                    scheduleType: 'relaxed'
+                });
+
                 try {
-                    const response = await fetch('http://localhost:3001/api/generate-itinerary', {
+                    const response = await fetch('/api/generate-itinerary', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${window.Auth?.session?.access_token || ''}` // Add Auth token
+                        },
                         body: JSON.stringify({
                             destinations: [destination],
                             startDate,
@@ -727,7 +741,17 @@
                         })
                     });
 
-                    if (!response.ok) throw new Error('Generation failed');
+                    if (!response.ok) {
+                        let errorMsg = 'Generation failed';
+                        try {
+                            const errorData = await response.json();
+                            errorMsg = errorData.error?.message || errorData.message || '오류가 발생했습니다.';
+                            console.error('Server Error:', errorData);
+                        } catch (e) {
+                            console.error('Response text:', await response.text());
+                        }
+                        throw new Error(errorMsg);
+                    }
 
                     const data = await response.json();
 
