@@ -95,9 +95,9 @@ export default async function handler(req, res) {
       styleTexts
     });
 
-    // Gemini API 호출 (최신 3.0 Flash 모델 사용 - 2026년 기준)
+    // Gemini API 호출 (안정적인 고성능 1.5 Pro 모델 사용)
     const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: 'POST',
         headers: {
