@@ -20,11 +20,12 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // 개발 환경 또는 허용된 origin
+    // 개발 환경 또는 허용된 origin만 허용
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(null, true); // 개발 편의상 모든 origin 허용 (프로덕션에서는 수정 필요)
+      console.warn(`⚠️ Blocked CORS request from: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
     }
   },
   methods: ['GET', 'POST', 'OPTIONS'],
@@ -152,21 +153,36 @@ app.post('/api/generate-itinerary', async (req, res) => {
       return res.status(500).json(errorResponse('API_ERROR', 'AI 응답이 없습니다.'));
     }
 
-    // JSON 파싱 (코드 블록 제거)
+    // Improved JSON extraction: handle markdown fences and use balanced braces
     let itinerary;
     try {
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        itinerary = JSON.parse(jsonMatch[0]);
-      } else {
-        throw new Error('No JSON found in response');
+      // Strip any markdown code fences (``` or ```json) and surrounding whitespace
+      let clean = responseText.trim();
+      clean = clean.replace(/```(?:json)?\s*\n?/gi, '').replace(/\n?```\s*$/gi, '');
+
+      // Find the first opening brace and locate the matching closing brace
+      const startIdx = clean.indexOf('{');
+      if (startIdx === -1) throw new Error('No opening brace found in AI response');
+      let depth = 0;
+      let endIdx = -1;
+      for (let i = startIdx; i < clean.length; i++) {
+        if (clean[i] === '{') depth++;
+        else if (clean[i] === '}') depth--;
+        if (depth === 0) { endIdx = i + 1; break; }
       }
+      if (endIdx === -1) throw new Error('No matching closing brace found');
+      const jsonStr = clean.slice(startIdx, endIdx);
+      itinerary = JSON.parse(jsonStr);
+      console.log('✅ Successfully parsed itinerary JSON (balanced braces)');
     } catch (parseError) {
-      console.error('JSON parse error:', parseError);
-      // 파싱 실패 시 원본 텍스트 반환
-      return res.json({
-        title: '여행 일정',
-        rawText: responseText
+      console.error('❌ JSON parse error:', parseError);
+      console.error('📄 Raw response preview:', responseText.substring(0, 500));
+
+      // Return error response instead of raw text
+      return res.status(500).json({
+        error: 'PARSE_ERROR',
+        message: 'AI 응답을 처리할 수 없습니다. 잠시 후 다시 시도해주세요.',
+        debugInfo: process.env.NODE_ENV === 'development' ? responseText.substring(0, 200) : undefined
       });
     }
 
