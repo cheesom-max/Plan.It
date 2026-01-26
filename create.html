@@ -53,7 +53,248 @@
             border: 2px solid #137fec;
             background-color: rgba(19, 127, 236, 0.05);
         }
+
+        /* Flatpickr Custom Theme */
+        .flatpickr-calendar {
+            font-family: 'Space Grotesk', sans-serif;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+        }
+
+        .flatpickr-calendar.dark {
+            background: #1f2937;
+            border-color: #374151;
+        }
+
+        .flatpickr-months {
+            background: linear-gradient(135deg, #137fec 0%, #0ea5e9 100%);
+            padding: 12px 8px;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .flatpickr-months .flatpickr-month {
+            color: white;
+            fill: white;
+            height: auto;
+        }
+
+        .flatpickr-current-month {
+            font-size: 1.1rem;
+            font-weight: 700;
+            padding: 0;
+        }
+
+        .flatpickr-current-month .cur-month,
+        .flatpickr-current-month .numInputWrapper {
+            font-weight: 700;
+        }
+
+        .flatpickr-months .flatpickr-prev-month,
+        .flatpickr-months .flatpickr-next-month {
+            fill: white;
+            color: white;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .flatpickr-months .flatpickr-prev-month:hover,
+        .flatpickr-months .flatpickr-next-month:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .flatpickr-weekdays {
+            background: #f8fafc;
+            padding: 8px 0;
+        }
+
+        .dark .flatpickr-weekdays {
+            background: #374151;
+        }
+
+        .flatpickr-weekday {
+            color: #6b7280;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .dark .flatpickr-weekday {
+            color: #9ca3af;
+        }
+
+        .flatpickr-day {
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.15s ease;
+            margin: 2px;
+        }
+
+        .flatpickr-day:hover:not(.flatpickr-disabled):not(.selected):not(.startRange):not(.endRange):not(.inRange) {
+            background: #e0f2fe;
+            border-color: #e0f2fe;
+        }
+
+        .dark .flatpickr-day:hover:not(.flatpickr-disabled):not(.selected):not(.startRange):not(.endRange):not(.inRange) {
+            background: #374151;
+            border-color: #374151;
+        }
+
+        .flatpickr-day.today {
+            border: 2px solid #137fec;
+            font-weight: 700;
+        }
+
+        .flatpickr-day.selected,
+        .flatpickr-day.startRange,
+        .flatpickr-day.endRange {
+            background: #137fec !important;
+            border-color: #137fec !important;
+            color: white !important;
+            font-weight: 700;
+        }
+
+        .flatpickr-day.inRange {
+            background: rgba(19, 127, 236, 0.15);
+            border-color: transparent;
+            box-shadow: none;
+        }
+
+        .flatpickr-day.startRange {
+            border-radius: 8px 0 0 8px;
+        }
+
+        .flatpickr-day.endRange {
+            border-radius: 0 8px 8px 0;
+        }
+
+        .flatpickr-day.startRange.endRange {
+            border-radius: 8px;
+        }
+
+        .flatpickr-day.flatpickr-disabled {
+            color: #d1d5db !important;
+            text-decoration: line-through;
+        }
+
+        .dark .flatpickr-day.flatpickr-disabled {
+            color: #4b5563 !important;
+        }
+
+        .flatpickr-innerContainer {
+            padding: 8px;
+        }
+
+        /* Date Range Display Box */
+        .date-range-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .date-range-container:hover {
+            border-color: #137fec;
+            box-shadow: 0 4px 12px rgba(19, 127, 236, 0.1);
+        }
+
+        .date-range-container:focus-within {
+            border-color: #137fec;
+            box-shadow: 0 0 0 3px rgba(19, 127, 236, 0.1);
+        }
+
+        .dark .date-range-container {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border-color: #374151;
+        }
+
+        .date-box {
+            flex: 1;
+            text-align: center;
+        }
+
+        .date-box-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .date-box-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .dark .date-box-value {
+            color: #f9fafb;
+        }
+
+        .date-arrow {
+            color: #137fec;
+            font-size: 1.5rem;
+        }
+
+        /* Quick Select Buttons */
+        .quick-select-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1.5px solid #e2e8f0;
+            background: white;
+            color: #4b5563;
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+
+        .quick-select-btn:hover {
+            border-color: #137fec;
+            color: #137fec;
+            background: rgba(19, 127, 236, 0.05);
+        }
+
+        .quick-select-btn.active {
+            background: #137fec;
+            color: white;
+            border-color: #137fec;
+        }
+
+        .dark .quick-select-btn {
+            background: #374151;
+            border-color: #4b5563;
+            color: #d1d5db;
+        }
+
+        .dark .quick-select-btn:hover {
+            border-color: #137fec;
+            color: #60a5fa;
+        }
+
+        .trip-duration-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: rgba(19, 127, 236, 0.1);
+            color: #137fec;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
     </style>
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -84,7 +325,8 @@
                                 class="text-sm font-bold text-gray-700 hover:text-primary">로그인</button>
                         </div>
                         <div id="userProfile" style="display: none;" class="flex items-center gap-3">
-                            <a href="#credits" id="creditsDisplay" class="flex items-center gap-1 px-3 py-1.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full text-sm font-semibold hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors">
+                            <a href="#credits" id="creditsDisplay"
+                                class="flex items-center gap-1 px-3 py-1.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full text-sm font-semibold hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors">
                                 <span class="material-symbols-outlined text-base">toll</span>
                                 <span id="creditsBalance">-</span>
                             </a>
@@ -130,17 +372,36 @@
                                     <span class="material-symbols-outlined">calendar_month</span>
                                     언제 떠나시나요?
                                 </h3>
-                                <div class="flex gap-4">
-                                    <div class="flex-1">
-                                        <label class="block text-sm text-gray-500 mb-1">출발일</label>
-                                        <input type="date" id="startDate"
-                                            class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-700">
+
+                                <!-- Quick Select Buttons -->
+                                <div class="flex flex-wrap gap-2 mb-4" id="quickSelectContainer">
+                                    <button type="button" class="quick-select-btn" data-days="weekend">이번 주말</button>
+                                    <button type="button" class="quick-select-btn" data-days="3">2박 3일</button>
+                                    <button type="button" class="quick-select-btn" data-days="5">4박 5일</button>
+                                    <button type="button" class="quick-select-btn" data-days="8">1주일</button>
+                                    <button type="button" class="quick-select-btn" data-days="15">2주일</button>
+                                </div>
+
+                                <!-- Date Range Display -->
+                                <div class="date-range-container" id="dateRangeContainer">
+                                    <div class="date-box">
+                                        <div class="date-box-label">출발일</div>
+                                        <div class="date-box-value" id="startDateDisplay">날짜 선택</div>
                                     </div>
-                                    <div class="flex-1">
-                                        <label class="block text-sm text-gray-500 mb-1">도착일</label>
-                                        <input type="date" id="endDate"
-                                            class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-700">
+                                    <span class="date-arrow material-symbols-outlined">arrow_forward</span>
+                                    <div class="date-box">
+                                        <div class="date-box-label">도착일</div>
+                                        <div class="date-box-value" id="endDateDisplay">날짜 선택</div>
                                     </div>
+                                    <!-- Hidden inputs for form data -->
+                                    <input type="hidden" id="startDate">
+                                    <input type="hidden" id="endDate">
+                                </div>
+
+                                <!-- Trip Duration Badge -->
+                                <div id="tripDurationBadge" class="trip-duration-badge" style="display: none;">
+                                    <span class="material-symbols-outlined text-sm">schedule</span>
+                                    <span id="tripDurationText">0박 0일</span>
                                 </div>
                             </div>
                             <div>
@@ -261,6 +522,9 @@
     <script src="auth-ui.js"></script>
     <script src="credits.js"></script>
     <script src="credits-ui.js"></script>
+    <!-- Flatpickr -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/ko.js"></script>
     <!-- NOTE: This is likely server side, but we need client side logic here -->
 
     <script>
@@ -273,8 +537,130 @@
             const initialEndDate = urlParams.get('endDate');
 
             if (initialDest) document.getElementById('destinationInput').value = initialDest;
-            if (initialDate) document.getElementById('startDate').value = initialDate;
-            if (initialEndDate) document.getElementById('endDate').value = initialEndDate;
+
+            // ========================================
+            // Flatpickr Date Range Picker
+            // ========================================
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            const startDateDisplay = document.getElementById('startDateDisplay');
+            const endDateDisplay = document.getElementById('endDateDisplay');
+            const dateRangeContainer = document.getElementById('dateRangeContainer');
+            const tripDurationBadge = document.getElementById('tripDurationBadge');
+            const tripDurationText = document.getElementById('tripDurationText');
+            const quickSelectBtns = document.querySelectorAll('.quick-select-btn');
+
+            // Format date for display
+            function formatDateDisplay(date) {
+                if (!date) return '날짜 선택';
+                const d = new Date(date);
+                const month = d.getMonth() + 1;
+                const day = d.getDate();
+                const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+                const weekday = weekdays[d.getDay()];
+                return `${month}월 ${day}일 (${weekday})`;
+            }
+
+            // Calculate trip duration
+            function updateTripDuration() {
+                const start = startDateInput.value;
+                const end = endDateInput.value;
+
+                if (start && end) {
+                    const startD = new Date(start);
+                    const endD = new Date(end);
+                    const nights = Math.ceil((endD - startD) / (1000 * 60 * 60 * 24));
+                    const days = nights + 1;
+
+                    if (nights >= 0) {
+                        tripDurationText.textContent = `${nights}박 ${days}일`;
+                        tripDurationBadge.style.display = 'inline-flex';
+                    }
+                } else {
+                    tripDurationBadge.style.display = 'none';
+                }
+            }
+
+            // Update display values
+            function updateDateDisplay(dates) {
+                if (dates.length >= 1) {
+                    startDateInput.value = flatpickr.formatDate(dates[0], 'Y-m-d');
+                    startDateDisplay.textContent = formatDateDisplay(dates[0]);
+                }
+                if (dates.length >= 2) {
+                    endDateInput.value = flatpickr.formatDate(dates[1], 'Y-m-d');
+                    endDateDisplay.textContent = formatDateDisplay(dates[1]);
+                } else {
+                    endDateInput.value = '';
+                    endDateDisplay.textContent = '날짜 선택';
+                }
+                updateTripDuration();
+            }
+
+            // Initialize Flatpickr
+            const datePicker = flatpickr(dateRangeContainer, {
+                mode: 'range',
+                dateFormat: 'Y-m-d',
+                minDate: 'today',
+                showMonths: window.innerWidth >= 768 ? 2 : 1,
+                locale: 'ko',
+                disableMobile: true,
+                animate: true,
+                onChange: function (selectedDates) {
+                    updateDateDisplay(selectedDates);
+                    // Clear quick select active state
+                    quickSelectBtns.forEach(b => b.classList.remove('active'));
+                },
+                onReady: function () {
+                    // Check for initial dates from URL params
+                    if (initialDate && initialEndDate) {
+                        this.setDate([initialDate, initialEndDate]);
+                        updateDateDisplay([new Date(initialDate), new Date(initialEndDate)]);
+                    } else if (initialDate) {
+                        this.setDate([initialDate]);
+                        updateDateDisplay([new Date(initialDate)]);
+                    }
+                }
+            });
+
+            // Quick Select Buttons
+            quickSelectBtns.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const value = this.dataset.days;
+                    const today = new Date();
+                    let startDate, endDate;
+
+                    // Clear active states
+                    quickSelectBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+
+                    if (value === 'weekend') {
+                        // Find next Saturday
+                        const dayOfWeek = today.getDay();
+                        const daysUntilSaturday = (6 - dayOfWeek + 7) % 7 || 7;
+                        startDate = new Date(today);
+                        startDate.setDate(today.getDate() + daysUntilSaturday);
+                        endDate = new Date(startDate);
+                        endDate.setDate(startDate.getDate() + 1); // Sunday
+                    } else {
+                        const days = parseInt(value);
+                        // Start tomorrow or today
+                        startDate = new Date(today);
+                        if (today.getHours() >= 18) {
+                            startDate.setDate(today.getDate() + 1);
+                        }
+                        endDate = new Date(startDate);
+                        endDate.setDate(startDate.getDate() + days - 1);
+                    }
+
+                    datePicker.setDate([startDate, endDate]);
+                    updateDateDisplay([startDate, endDate]);
+                });
+            });
+
+            // ========================================
+            // End Date Picker Setup
+            // ========================================
 
             // Interest Cards Selection
             const interestCards = document.querySelectorAll('.style-card');
