@@ -713,6 +713,16 @@
                 // Prepare API Payload (Simulation utilizing existing server endpoint if possible, or direct API call)
                 // Since this is client side, we should call our server endpoint.
 
+                // Get valid session token
+                let accessToken = '';
+                try {
+                    const { data: { session } } = await window.supabaseClient.auth.getSession();
+                    accessToken = session?.access_token || '';
+                    console.log('Session retrieved:', session ? 'Yes' : 'No');
+                } catch (err) {
+                    console.error('Failed to get session:', err);
+                }
+
                 // Debugging logs
                 console.log('Sending request to /api/generate-itinerary');
                 console.log('Payload:', {
@@ -729,7 +739,7 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${window.Auth?.session?.access_token || ''}` // Add Auth token
+                            'Authorization': `Bearer ${accessToken}`
                         },
                         body: JSON.stringify({
                             destinations: [destination],
