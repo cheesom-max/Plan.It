@@ -121,8 +121,9 @@ DECLARE
     bonus_credits INTEGER := 3;  -- 무료 체험 크레딧
 BEGIN
     -- 크레딧 잔액 테이블에 레코드 생성
+    -- 보너스는 구매가 아니므로 total_purchased=0 유지
     INSERT INTO user_credits (user_id, balance, total_purchased)
-    VALUES (NEW.id, bonus_credits, bonus_credits);
+    VALUES (NEW.id, bonus_credits, 0);
 
     -- 보너스 지급 내역 기록
     INSERT INTO credit_transactions (user_id, amount, type, description, balance_after)

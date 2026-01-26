@@ -5,11 +5,19 @@ import { errorResponse, ErrorCodes } from '../../lib/api-utils.js';
 import { addCredits, getSupabaseAdmin } from '../../lib/supabase-admin.js';
 import crypto from 'crypto';
 
-// 래피드 웹훅 검증 (필요시 시크릿 키로 서명 검증)
+// 래피드 웹훅 검증 (프로덕션에서는 시크릿 키 검증 필수)
 function verifyWebhookSignature(payload, signature, secret) {
+    // 프로덕션에서는 반드시 시크릿 설정 필요
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production';
+
     if (!secret) {
-        // 시크릿이 설정되지 않으면 검증 스킵 (개발용)
-        console.warn('⚠️ LATPEED_WEBHOOK_SECRET이 설정되지 않았습니다.');
+        if (isProduction) {
+            // 프로덕션에서 시크릿 없으면 거부 (보안 강화)
+            console.error('❌ LATPEED_WEBHOOK_SECRET이 프로덕션에서 설정되지 않았습니다.');
+            return false;
+        }
+        // 개발 환경에서만 검증 스킵
+        console.warn('⚠️ LATPEED_WEBHOOK_SECRET이 설정되지 않았습니다. (개발 모드)');
         return true;
     }
 
@@ -101,16 +109,13 @@ export default async function handler(req, res) {
             if (pkg) {
                 creditsToAdd = pkg.credits;
                 console.log(`📦 패키지 매칭: ${pkg.name} (${pkg.credits} 크레딧)`);
+            } else {
+                console.error(`❌ 패키지를 찾을 수 없음: product_id=${product_id}`);
             }
         }
 
-        // 패키지를 찾지 못하면 금액으로 추정
-        if (creditsToAdd === 0 && amount) {
-            // 가격 기준 크레딧 계산 (5000원 = 10크레딧 기준)
-            const pricePerCredit = 500;
-            creditsToAdd = Math.floor(amount / pricePerCredit);
-            console.log(`💰 금액 기준 크레딧 계산: ${amount}원 → ${creditsToAdd} 크레딧`);
-        }
+        // 보안: 패키지 매칭 필수 (금액 기반 추정 제거)
+        // 공격자가 임의의 amount 값으로 크레딧 조작 방지
 
         if (creditsToAdd <= 0) {
             console.error('❌ 충전할 크레딧을 계산할 수 없음');

@@ -1,7 +1,7 @@
 // API: Generate Itinerary using Gemini AI
 import { setCorsHeaders, errorResponse, ErrorCodes } from '../lib/api-utils.js';
 import { generateItineraryPrompt, stylesToText, destinationsToText } from '../lib/prompts.js';
-import { getUserIdFromAuth, getUserCredits, useCredits } from '../lib/supabase-admin.js';
+import { getUserIdFromAuth, useCredits } from '../lib/supabase-admin.js';
 
 // 여행 계획 1회 생성에 필요한 크레딧
 const CREDITS_PER_GENERATION = 1;
@@ -23,7 +23,8 @@ export default async function handler(req, res) {
     const GEMINI_API_KEY = process.env.GOOGLE_API_KEY;
 
     // ========================================
-    // 크레딧 시스템: 인증 및 잔액 확인
+    // 크레딧 시스템: 인증 및 크레딧 선차감
+    // Race Condition 방지: 잔액 확인과 차감을 원자적으로 처리
     // ========================================
     const userId = await getUserIdFromAuth(req.headers.authorization);
 
@@ -33,11 +34,18 @@ export default async function handler(req, res) {
       );
     }
 
-    // 크레딧 잔액 확인
-    const credits = await getUserCredits(userId);
-    const currentBalance = credits?.balance || 0;
+    // 크레딧 선차감 (use_credits 함수 내에서 잔액 확인 + 차감이 원자적으로 처리됨)
+    const { destinations: destForCredit } = req.body;
+    const creditResult = await useCredits(
+      userId,
+      CREDITS_PER_GENERATION,
+      `여행 계획 생성: ${destForCredit?.[0]?.name || '여행'}`,
+      null
+    );
 
-    if (currentBalance < CREDITS_PER_GENERATION) {
+    if (!creditResult.success) {
+      // 잔액 부족 또는 차감 실패
+      const currentBalance = creditResult.newBalance || 0;
       return res.status(402).json(
         errorResponse(
           ErrorCodes.INSUFFICIENT_CREDITS,
@@ -46,6 +54,8 @@ export default async function handler(req, res) {
         )
       );
     }
+
+    console.log(`💳 크레딧 선차감: -${CREDITS_PER_GENERATION}, 새 잔액: ${creditResult.newBalance}`);
     // ========================================
 
     if (!GEMINI_API_KEY) {
@@ -144,28 +154,11 @@ export default async function handler(req, res) {
       itinerary = JSON.parse(jsonStr);
       console.log('✅ Successfully parsed itinerary JSON (balanced braces)');
 
-      // ========================================
-      // 크레딧 차감 (성공 시에만)
-      // ========================================
-      const creditResult = await useCredits(
-        userId,
-        CREDITS_PER_GENERATION,
-        `여행 계획 생성: ${destinations[0]?.name || '여행'}`,
-        null  // trip_id가 있으면 여기에 전달
-      );
-
-      if (!creditResult.success) {
-        console.error('❌ 크레딧 차감 실패:', creditResult.message);
-        // 크레딧 차감 실패해도 일정은 반환 (서비스 품질 유지)
-      } else {
-        console.log(`💳 크레딧 차감: -${CREDITS_PER_GENERATION}, 새 잔액: ${creditResult.newBalance}`);
-        // 응답에 새 잔액 포함
-        itinerary._credits = {
-          used: CREDITS_PER_GENERATION,
-          remaining: creditResult.newBalance
-        };
-      }
-      // ========================================
+      // 응답에 크레딧 정보 포함 (이미 선차감됨)
+      itinerary._credits = {
+        used: CREDITS_PER_GENERATION,
+        remaining: creditResult.newBalance
+      };
 
     } catch (parseError) {
       console.error('❌ JSON parse error:', parseError);
