@@ -3,11 +3,15 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const { GoogleGenAI } = require('@google/genai');
 const { generateItineraryPrompt, stylesToText, destinationsToText } = require('./lib/prompts.cjs');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 const GEMINI_API_KEY = process.env.GOOGLE_API_KEY;
+
+// Google GenAI 클라이언트 초기화
+const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 // CORS 설정 (보안 강화)
 const allowedOrigins = [
@@ -119,35 +123,20 @@ app.post('/api/generate-itinerary', async (req, res) => {
       styleTexts
     });
 
-    // Gemini API 호출
-    const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{ text: prompt }]
-          }],
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 8192
-          }
-        })
+    // Google GenAI SDK를 통한 API 호출
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: {
+        temperature: 0.7,
+        maxOutputTokens: 65536,
+        thinkingConfig: {
+          thinkingBudget: 0  // thinking 비활성화로 빠른 응답
+        }
       }
-    );
+    });
 
-    const geminiData = await geminiResponse.json();
-
-    if (geminiData.error) {
-      console.error('Gemini API error:', geminiData.error);
-      return res.status(500).json(errorResponse('API_ERROR', 'AI 서비스 오류가 발생했습니다.'));
-    }
-
-    // 응답에서 텍스트 추출
-    const responseText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+    const responseText = response.text;
 
     if (!responseText) {
       return res.status(500).json(errorResponse('API_ERROR', 'AI 응답이 없습니다.'));

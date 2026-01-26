@@ -1,4 +1,5 @@
 // API: Generate Itinerary using Gemini AI
+import { GoogleGenAI } from '@google/genai';
 import { setCorsHeaders, errorResponse, ErrorCodes } from '../lib/api-utils.js';
 import { generateItineraryPrompt, stylesToText, destinationsToText } from '../lib/prompts.js';
 import { getUserIdFromAuth, useCredits } from '../lib/supabase-admin.js';
@@ -95,39 +96,22 @@ export default async function handler(req, res) {
       styleTexts
     });
 
-    // Gemini API 호출 (사용자 검증 모델: 2.5 Flash)
-    const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{ text: prompt }]
-          }],
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 8192
-          }
-        })
+    // Google GenAI SDK를 통한 API 호출
+    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: {
+        temperature: 0.7,
+        maxOutputTokens: 65536,
+        thinkingConfig: {
+          thinkingBudget: 0  // thinking 비활성화로 빠른 응답
+        }
       }
-    );
+    });
 
-    const geminiData = await geminiResponse.json();
-
-    if (geminiData.error) {
-      console.error('Gemini API error:', geminiData.error);
-      // 상세 에러 메시지 전달 (디버깅용)
-      const errorMessage = geminiData.error.message || 'AI 서비스 오류가 발생했습니다.';
-      return res.status(500).json(
-        errorResponse(ErrorCodes.API_ERROR, errorMessage, geminiData.error)
-      );
-    }
-
-    // 응답에서 텍스트 추출
-    const responseText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+    const responseText = response.text;
 
     if (!responseText) {
       return res.status(500).json(
