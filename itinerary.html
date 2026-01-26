@@ -399,6 +399,44 @@
             }
         });
 
+        // Initialize Leaflet Map
+        function initMap(destination) {
+            const mapContainer = document.getElementById('map');
+            if (!mapContainer) return;
+
+            // Default coordinates (Seoul)
+            let lat = 37.5665;
+            let lng = 126.9780;
+
+            // Create map
+            const map = L.map('map').setView([lat, lng], 12);
+
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Geocode destination and center map
+            if (destination) {
+                const destName = typeof destination === 'object' ? (destination.name || destination.displayName) : destination;
+                fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(destName)}&format=json&limit=1`, {
+                    headers: { 'User-Agent': 'VoyageAI-TravelPlanner/1.0' }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        const { lat: newLat, lon: newLng } = data[0];
+                        map.setView([parseFloat(newLat), parseFloat(newLng)], 12);
+                        L.marker([parseFloat(newLat), parseFloat(newLng)])
+                            .addTo(map)
+                            .bindPopup(`<b>${destName}</b>`)
+                            .openPopup();
+                    }
+                })
+                .catch(err => console.warn('Geocoding failed:', err));
+            }
+        }
+
         function renderItinerary(data) {
             const sidebarList = document.getElementById('daySidebarList');
             const mainContent = document.getElementById('itineraryContent');

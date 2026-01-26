@@ -742,11 +742,11 @@
                             'Authorization': `Bearer ${accessToken}`
                         },
                         body: JSON.stringify({
-                            destinations: [destination],
+                            destinations: [{ name: destination, displayName: destination }],
                             startDate,
                             endDate,
                             companion,
-                            style: styles,
+                            styles: styles,
                             scheduleType: 'relaxed' // Default
                         })
                     });
