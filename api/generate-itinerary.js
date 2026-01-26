@@ -109,8 +109,7 @@ export default async function handler(req, res) {
           }],
           generationConfig: {
             temperature: 0.7,
-            maxOutputTokens: 8192,
-            responseMimeType: "application/json"
+            maxOutputTokens: 8192
           }
         })
       }
@@ -120,8 +119,10 @@ export default async function handler(req, res) {
 
     if (geminiData.error) {
       console.error('Gemini API error:', geminiData.error);
+      // 상세 에러 메시지 전달 (디버깅용)
+      const errorMessage = geminiData.error.message || 'AI 서비스 오류가 발생했습니다.';
       return res.status(500).json(
-        errorResponse(ErrorCodes.API_ERROR, 'AI 서비스 오류가 발생했습니다.', geminiData.error)
+        errorResponse(ErrorCodes.API_ERROR, errorMessage, geminiData.error)
       );
     }
 
