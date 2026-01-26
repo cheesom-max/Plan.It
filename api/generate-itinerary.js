@@ -23,41 +23,8 @@ export default async function handler(req, res) {
     const GEMINI_API_KEY = process.env.GOOGLE_API_KEY;
 
     // ========================================
-    // 크레딧 시스템: 인증 및 크레딧 선차감
-    // Race Condition 방지: 잔액 확인과 차감을 원자적으로 처리
+    // 입력 검증 (크레딧 차감 전에 먼저 수행)
     // ========================================
-    const userId = await getUserIdFromAuth(req.headers.authorization);
-
-    if (!userId) {
-      return res.status(401).json(
-        errorResponse(ErrorCodes.UNAUTHORIZED, '로그인이 필요합니다.')
-      );
-    }
-
-    // 크레딧 선차감 (use_credits 함수 내에서 잔액 확인 + 차감이 원자적으로 처리됨)
-    const { destinations: destForCredit } = req.body;
-    const creditResult = await useCredits(
-      userId,
-      CREDITS_PER_GENERATION,
-      `여행 계획 생성: ${destForCredit?.[0]?.name || '여행'}`,
-      null
-    );
-
-    if (!creditResult.success) {
-      // 잔액 부족 또는 차감 실패
-      const currentBalance = creditResult.newBalance || 0;
-      return res.status(402).json(
-        errorResponse(
-          ErrorCodes.INSUFFICIENT_CREDITS,
-          `크레딧이 부족합니다. 현재 잔액: ${currentBalance} 크레딧`,
-          { balance: currentBalance, required: CREDITS_PER_GENERATION }
-        )
-      );
-    }
-
-    console.log(`💳 크레딧 선차감: -${CREDITS_PER_GENERATION}, 새 잔액: ${creditResult.newBalance}`);
-    // ========================================
-
     if (!GEMINI_API_KEY) {
       return res.status(500).json(
         errorResponse(ErrorCodes.MISSING_API_KEY, 'API 키가 설정되지 않았습니다.')
@@ -75,6 +42,40 @@ export default async function handler(req, res) {
         errorResponse(ErrorCodes.INVALID_INPUT, '여행 날짜를 선택해주세요.')
       );
     }
+
+    // ========================================
+    // 크레딧 시스템: 인증 및 크레딧 선차감
+    // Race Condition 방지: 잔액 확인과 차감을 원자적으로 처리
+    // ========================================
+    const userId = await getUserIdFromAuth(req.headers.authorization);
+
+    if (!userId) {
+      return res.status(401).json(
+        errorResponse(ErrorCodes.UNAUTHORIZED, '로그인이 필요합니다.')
+      );
+    }
+
+    // 크레딧 선차감 (use_credits 함수 내에서 잔액 확인 + 차감이 원자적으로 처리됨)
+    const creditResult = await useCredits(
+      userId,
+      CREDITS_PER_GENERATION,
+      `여행 계획 생성: ${destinations[0]?.name || '여행'}`,
+      null
+    );
+
+    if (!creditResult.success) {
+      // 잔액 부족 또는 차감 실패
+      const currentBalance = creditResult.newBalance || 0;
+      return res.status(402).json(
+        errorResponse(
+          ErrorCodes.INSUFFICIENT_CREDITS,
+          `크레딧이 부족합니다. 현재 잔액: ${currentBalance} 크레딧`,
+          { balance: currentBalance, required: CREDITS_PER_GENERATION }
+        )
+      );
+    }
+
+    console.log(`💳 크레딧 선차감: -${CREDITS_PER_GENERATION}, 새 잔액: ${creditResult.newBalance}`);
 
     // 여행 일수 계산
     const start = new Date(startDate);
