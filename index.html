@@ -92,7 +92,8 @@
                     <!-- <button class="bg-primary text-white px-6 py-2.5 rounded-lg text-sm font-bold shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all">시작하기</button> -->
                 </div>
                 <div id="userProfile" style="display: none;" class="flex items-center gap-3">
-                    <a href="#credits" id="creditsDisplay" class="flex items-center gap-1 px-3 py-1.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full text-sm font-semibold hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors">
+                    <a href="#credits" id="creditsDisplay"
+                        class="flex items-center gap-1 px-3 py-1.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full text-sm font-semibold hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors">
                         <span class="material-symbols-outlined text-base">toll</span>
                         <span id="creditsBalance">-</span>
                     </a>
@@ -116,43 +117,16 @@
                 <p class="text-white/90 text-lg md:text-xl max-w-2xl mb-12 font-medium">
                     당신의 취향, 예산, 그리고 꿈꾸던 순간을 단 몇 초 만에 완벽한 일정으로 만들어 드립니다.
                 </p>
-                <div
-                    class="w-full max-w-4xl bg-white dark:bg-slate-800 p-2 rounded-xl shadow-2xl flex flex-col md:flex-row items-stretch gap-2 relative">
-                    <div
-                        class="flex-1 flex items-center px-4 gap-3 border-r border-slate-100 dark:border-slate-700 relative">
-                        <span class="material-symbols-outlined text-slate-400">location_on</span>
-                        <input id="heroDestination"
-                            class="w-full bg-transparent border-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 py-4"
-                            placeholder="어디로 떠나시나요? (예: 산토리니, 교토)" type="text" autocomplete="off" />
-                        <!-- Suggestions Container -->
-                        <div
-                            class="hero-suggestions absolute top-full left-0 w-full bg-white dark:bg-slate-800 rounded-xl shadow-xl mt-2 overflow-hidden z-50 hidden">
-                        </div>
-                    </div>
-                    <div
-                        class="flex-[1.5] flex items-center px-4 gap-3 border-r border-slate-100 dark:border-slate-700">
-                        <span class="material-symbols-outlined text-slate-400">calendar_month</span>
-                        <input id="heroStartDate" type="text" onfocus="(this.type='date')" onblur="(this.type='text')"
-                            class="w-full bg-transparent border-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 py-4 text-sm"
-                            placeholder="출발일" />
-                        <span class="text-slate-300">~</span>
-                        <input id="heroEndDate" type="text" onfocus="(this.type='date')" onblur="(this.type='text')"
-                            class="w-full bg-transparent border-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 py-4 text-sm"
-                            placeholder="도착일" />
-                    </div>
-                    <div class="flex-1 flex items-center px-4 gap-3">
-                        <span class="material-symbols-outlined text-slate-400">person</span>
-                        <input
-                            class="w-full bg-transparent border-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 py-4"
-                            placeholder="인원수" type="text" />
-                    </div>
-                    <button id="heroSearchBtn"
-                        class="bg-primary text-white px-8 py-4 rounded-lg font-bold hover:bg-primary/90 transition-all flex items-center justify-center gap-2 whitespace-nowrap">
-                        <span class="material-symbols-outlined">auto_awesome</span>
-                        일정 생성하기
-                    </button>
-                    <!-- Form Wrapper for compatibility if script.js expects it, though script.js uses getElementById('heroSearchForm') which might not exist here. Check script.js: it checks if(heroSearchForm). We can wrap this div in a form id="heroSearchForm" OR just rely on button ID since script.js has btn click listener too. Step 187 showed: if(heroSearchBtn) addEventListener. So just button ID is enough. -->
-                </div>
+                <!-- CTA Button -->
+                <a href="create.html"
+                    class="bg-white text-primary px-12 py-5 rounded-xl font-bold text-lg shadow-2xl hover:bg-slate-50 hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center gap-3">
+                    <span class="material-symbols-outlined text-2xl">auto_awesome</span>
+                    나만의 여행 일정 만들기
+                </a>
+                <p class="text-white/60 text-sm mt-6 font-medium">
+                    <span class="material-symbols-outlined text-sm align-middle">schedule</span>
+                    단 30초만에 AI가 맞춤 일정을 설계합니다
+                </p>
             </div>
         </div>
     </section>
