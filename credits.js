@@ -1,12 +1,11 @@
 // Credits Module
 // AI Travel Planner - 크레딧 시스템 관련 함수
 
-// API 베이스 URL
+// API 베이스 URL - 현재 호스트 기반으로 동적 설정 (하드코딩 제거)
 const getApiBaseUrl = () => {
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        return `http://${window.location.host}`;
-    }
-    return 'https://ai-travel-planner-ivory-nu.vercel.app';
+    // window.location.origin은 프로토콜 + 호스트 + 포트를 반환
+    // 예: http://localhost:3000, https://ai-travel-planner-ivory-nu.vercel.app
+    return window.location.origin;
 };
 
 // 인증 토큰 가져오기

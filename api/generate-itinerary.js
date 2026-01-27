@@ -95,13 +95,14 @@ export default async function handler(req, res) {
       styleTexts
     });
 
-    // Gemini API 호출 (REST API)
+    // Gemini API 호출 (REST API) - API 키를 헤더로 전달 (URL 노출 방지)
     const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
       {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'x-goog-api-key': GEMINI_API_KEY
         },
         body: JSON.stringify({
           contents: [{

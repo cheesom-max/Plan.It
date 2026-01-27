@@ -14,13 +14,14 @@ const GEMINI_API_KEY = process.env.GOOGLE_API_KEY;
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 // CORS 설정 (보안 강화)
+// 환경 변수 ALLOWED_ORIGIN으로 추가 도메인 설정 가능
 const allowedOrigins = [
-  'https://ai-travel-planner-ivory-nu.vercel.app',
+  process.env.ALLOWED_ORIGIN || 'https://ai-travel-planner-ivory-nu.vercel.app',
   'http://localhost:3001',
   'http://localhost:3000',
   'http://127.0.0.1:3001',
   'http://127.0.0.1:3000'
-];
+].filter(Boolean);
 
 const corsOptions = {
   origin: function (origin, callback) {

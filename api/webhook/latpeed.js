@@ -65,10 +65,29 @@ export default async function handler(req, res) {
             custom_fields    // 커스텀 필드 (user_id 포함)
         } = payload;
 
+        // 입력 검증: 필수 필드 확인
+        if (!event || typeof event !== 'string') {
+            console.error('❌ 유효하지 않은 이벤트:', event);
+            return res.status(400).json(
+                errorResponse(ErrorCodes.INVALID_INPUT, '유효하지 않은 이벤트입니다.')
+            );
+        }
+
+        // 허용된 이벤트 타입 목록
+        const ALLOWED_EVENTS = ['payment.completed', 'order.completed'];
+
         // 결제 완료 이벤트만 처리
-        if (event !== 'payment.completed' && event !== 'order.completed') {
+        if (!ALLOWED_EVENTS.includes(event)) {
             console.log(`ℹ️ 처리하지 않는 이벤트: ${event}`);
             return res.status(200).json({ success: true, message: '이벤트 무시됨' });
+        }
+
+        // 결제 완료 이벤트인 경우 추가 검증
+        if (!product_id && !order_id) {
+            console.error('❌ product_id 또는 order_id가 필요합니다.');
+            return res.status(400).json(
+                errorResponse(ErrorCodes.INVALID_INPUT, 'product_id 또는 order_id가 필요합니다.')
+            );
         }
 
         // 사용자 ID 추출 (custom_fields에서 또는 buyer_email로 조회)

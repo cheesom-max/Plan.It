@@ -686,7 +686,15 @@
 
             // Generate Button
             const generateBtn = document.getElementById('generateBtn');
+            let isGenerating = false; // 중복 클릭 방지 플래그
+
             generateBtn.addEventListener('click', async function () {
+                // 중복 클릭 방지
+                if (isGenerating) {
+                    console.log('⚠️ 이미 생성 중입니다.');
+                    return;
+                }
+                isGenerating = true;
                 // Collect Data
                 const destination = document.getElementById('destinationInput').value;
                 const startDate = document.getElementById('startDate').value;
@@ -751,19 +759,22 @@
                         })
                     });
 
-                    if (!response.ok) {
-                        let errorMsg = 'Generation failed';
-                        try {
-                            const errorData = await response.json();
-                            errorMsg = errorData.error?.message || errorData.message || '오류가 발생했습니다.';
-                            console.error('Server Error:', errorData);
-                        } catch (e) {
-                            console.error('Response text:', await response.text());
-                        }
-                        throw new Error(errorMsg);
+                    // Response body는 한 번만 읽을 수 있으므로 text()로 먼저 읽고 JSON 파싱
+                    const responseText = await response.text();
+                    let data;
+
+                    try {
+                        data = JSON.parse(responseText);
+                    } catch (e) {
+                        console.error('JSON parse error. Response text:', responseText);
+                        throw new Error('서버 응답을 처리할 수 없습니다.');
                     }
 
-                    const data = await response.json();
+                    if (!response.ok) {
+                        const errorMsg = data.error?.message || data.message || '오류가 발생했습니다.';
+                        console.error('Server Error:', data);
+                        throw new Error(errorMsg);
+                    }
 
                     // Save to LocalStorage to pass to Itinerary Page
                     localStorage.setItem('travelItinerary', JSON.stringify(data));
@@ -783,6 +794,7 @@
                     alert('일정 생성 중 오류가 발생했습니다: ' + err.message);
                     generateBtn.innerHTML = originalText;
                     generateBtn.disabled = false;
+                    isGenerating = false; // 플래그 초기화
                 }
             });
         });
