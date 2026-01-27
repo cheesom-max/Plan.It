@@ -17,3 +17,8 @@ Thumbs.db
 .vscode/
 .idea/
 .vercel
+
+# Test data
+*_itinerary.json
+test*.json
+nul

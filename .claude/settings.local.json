@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(npm start)",
+      "Bash(taskkill:*)",
+      "Bash(timeout /t 2 /nobreak)",
+      "Bash(npm install:*)",
+      "Bash(curl:*)",
+      "Bash(tasklist:*)",
+      "Bash(findstr:*)",
+      "WebSearch",
+      "WebFetch(domain:www.latpeed.com)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nImplement credit system for trip generation\n\n- Add credit tables schema \\(user_credits, credit_transactions, credit_packages\\)\n- Add credits API endpoint for balance/transactions/packages\n- Add Latpeed webhook for payment processing\n- Add credit deduction logic to generate-itinerary API\n- Add frontend credits module with balance display\n- Update auth-ui to show credit balance in header\n- Add @supabase/supabase-js dependency for server-side operations\n\nFeatures:\n- 3 free credits on signup \\(bonus\\)\n- Credit packages: Starter \\(10\\), Pro \\(30\\), Premium \\(100\\)\n- 1 credit per trip generation\n- Real-time balance updates after generation\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)",
+      "Bash(git commit:*)",
+      "WebFetch(domain:ai-travel-planner-ivory-nu.vercel.app)",
+      "Bash(netstat:*)",
+      "Bash(node:*)",
+      "mcp__context7__resolve-library-id",
+      "Bash(ping:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "google-search",
+    "sequential-thinking",
+    "filesystem"
+  ]
+}
