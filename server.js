@@ -124,16 +124,13 @@ app.post('/api/generate-itinerary', async (req, res) => {
       styleTexts
     });
 
-    // Google GenAI SDK를 통한 API 호출
+    // Google GenAI SDK를 통한 API 호출 (최적화: 토큰 제한으로 응답 시간 단축)
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
       config: {
         temperature: 0.7,
-        maxOutputTokens: 65536,
-        thinkingConfig: {
-          thinkingBudget: 0  // thinking 비활성화로 빠른 응답
-        }
+        maxOutputTokens: 16384
       }
     });
 

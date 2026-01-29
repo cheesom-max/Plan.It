@@ -96,25 +96,42 @@ export default async function handler(req, res) {
     });
 
     // Gemini API 호출 (REST API) - API 키를 헤더로 전달 (URL 노출 방지)
-    const geminiResponse = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': GEMINI_API_KEY
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{ text: prompt }]
-          }],
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 65536
-          }
-        })
+    // AbortController로 타임아웃 설정 (Vercel Free tier 10초 제한 대응)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 55000); // 55초 타임아웃
+
+    let geminiResponse;
+    try {
+      geminiResponse = await fetch(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': GEMINI_API_KEY
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{ text: prompt }]
+            }],
+            generationConfig: {
+              temperature: 0.7,
+              maxOutputTokens: 16384
+            }
+          }),
+          signal: controller.signal
+        }
+      );
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      if (fetchError.name === 'AbortError') {
+        return res.status(504).json(
+          errorResponse(ErrorCodes.API_ERROR, 'AI 응답 시간이 초과되었습니다. 더 짧은 여행 기간으로 다시 시도해주세요.')
+        );
       }
-    );
+      throw fetchError;
+    }
+    clearTimeout(timeoutId);
 
     const geminiData = await geminiResponse.json();
 
