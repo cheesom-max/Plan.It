@@ -318,9 +318,9 @@
                                 destination: tripInfo.destinations.join(', '),
                                 start_date: tripInfo.startDate,
                                 end_date: tripInfo.endDate,
-                                companion_type: tripInfo.companion,
-                                travel_style: tripInfo.styles,
-                                budget_level: 'mid'
+                                companion: tripInfo.companion || 'alone',
+                                styles: tripInfo.styles && tripInfo.styles.length > 0 ? tripInfo.styles : ['culture'],
+                                status: 'completed'
                             })
                             .select()
                             .single();
