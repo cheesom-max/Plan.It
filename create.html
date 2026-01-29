@@ -372,32 +372,32 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- Arrival & Departure Time -->
+                            <!-- Departure & Return Time -->
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label
-                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">첫날 도착 예정 시간</label>
-                                    <select id="arrivalTime"
+                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">첫날 출발 예정 시간</label>
+                                    <select id="firstDayDepartureTime"
                                         class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-700">
-                                        <option value="08:00">오전 8시 (이른 아침)</option>
-                                        <option value="10:00" selected>오전 10시</option>
+                                        <option value="06:00">오전 6시 (새벽)</option>
+                                        <option value="08:00" selected>오전 8시</option>
+                                        <option value="10:00">오전 10시</option>
                                         <option value="12:00">정오 12시</option>
                                         <option value="14:00">오후 2시</option>
-                                        <option value="16:00">오후 4시</option>
-                                        <option value="18:00">오후 6시 (저녁)</option>
+                                        <option value="16:00">오후 4시 (늦은 출발)</option>
                                     </select>
                                 </div>
                                 <div>
                                     <label
-                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">마지막날 출발 예정 시간</label>
-                                    <select id="departureTime"
+                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">마지막날 도착 예정 시간</label>
+                                    <select id="lastDayArrivalTime"
                                         class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-700">
-                                        <option value="12:00">정오 12시 (이른 출발)</option>
-                                        <option value="14:00">오후 2시</option>
+                                        <option value="14:00">오후 2시 (이른 귀가)</option>
                                         <option value="16:00">오후 4시</option>
-                                        <option value="18:00" selected>오후 6시</option>
-                                        <option value="20:00">오후 8시</option>
-                                        <option value="22:00">오후 10시 (늦은 출발)</option>
+                                        <option value="18:00">오후 6시</option>
+                                        <option value="20:00" selected>오후 8시</option>
+                                        <option value="22:00">오후 10시</option>
+                                        <option value="24:00">자정 (늦은 귀가)</option>
                                     </select>
                                 </div>
                             </div>
@@ -736,8 +736,8 @@
                 const destination = document.getElementById('destinationInput').value;
                 const startDate = document.getElementById('startDate').value;
                 const endDate = document.getElementById('endDate').value;
-                const arrivalTime = document.getElementById('arrivalTime').value;
-                const departureTime = document.getElementById('departureTime').value;
+                const firstDayDepartureTime = document.getElementById('firstDayDepartureTime').value;
+                const lastDayArrivalTime = document.getElementById('lastDayArrivalTime').value;
 
                 const styles = Array.from(document.querySelectorAll('.style-card.active-card')).map(el => el.dataset.value);
                 const companionBtn = Array.from(document.querySelectorAll('.companion-btn')).find(b => b.classList.contains('bg-primary'));
@@ -778,8 +778,8 @@
                     destinations: [destination],
                     startDate,
                     endDate,
-                    arrivalTime,
-                    departureTime,
+                    firstDayDepartureTime,
+                    lastDayArrivalTime,
                     companion,
                     style: styles,
                     scheduleType: 'relaxed'
@@ -797,8 +797,8 @@
                             destinations: [{ name: destination, displayName: destination }],
                             startDate,
                             endDate,
-                            arrivalTime,
-                            departureTime,
+                            firstDayDepartureTime,
+                            lastDayArrivalTime,
                             companion,
                             styles: styles,
                             scheduleType: 'relaxed' // Default
@@ -828,8 +828,8 @@
                         departure,
                         destinations: [destination],
                         startDate,
-                        arrivalTime,
-                        departureTime,
+                        firstDayDepartureTime,
+                        lastDayArrivalTime,
                         endDate,
                         companion,
                         styles
