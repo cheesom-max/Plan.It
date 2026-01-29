@@ -440,6 +440,53 @@
                                     <span id="tripDurationText">0박 0일</span>
                                 </div>
                             </div>
+
+                            <div>
+                                <h3
+                                    class="text-gray-900 dark:text-white text-xl font-bold mb-4 flex items-center gap-2">
+                                    <span class="material-symbols-outlined">commute</span>
+                                    교통수단
+                                </h3>
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" id="transportContainer">
+                                    <div class="cursor-pointer group flex flex-col items-center justify-center p-4 rounded-xl border-2 border-gray-100 dark:border-gray-800 hover:border-primary transition-all transport-card"
+                                        data-value="car">
+                                        <div
+                                            class="size-12 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-2 group-hover:bg-primary/10">
+                                            <span
+                                                class="material-symbols-outlined text-gray-600 dark:text-gray-400 group-hover:text-primary">directions_car</span>
+                                        </div>
+                                        <span class="text-sm font-bold dark:text-white">자동차</span>
+                                    </div>
+                                    <div class="cursor-pointer group flex flex-col items-center justify-center p-4 rounded-xl border-2 border-gray-100 dark:border-gray-800 hover:border-primary transition-all transport-card"
+                                        data-value="airplane">
+                                        <div
+                                            class="size-12 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-2 group-hover:bg-primary/10">
+                                            <span
+                                                class="material-symbols-outlined text-gray-600 dark:text-gray-400 group-hover:text-primary">flight</span>
+                                        </div>
+                                        <span class="text-sm font-bold dark:text-white">비행기</span>
+                                    </div>
+                                    <div class="cursor-pointer group flex flex-col items-center justify-center p-4 rounded-xl border-2 border-gray-100 dark:border-gray-800 hover:border-primary transition-all transport-card"
+                                        data-value="train">
+                                        <div
+                                            class="size-12 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-2 group-hover:bg-primary/10">
+                                            <span
+                                                class="material-symbols-outlined text-gray-600 dark:text-gray-400 group-hover:text-primary">train</span>
+                                        </div>
+                                        <span class="text-sm font-bold dark:text-white">기차/KTX</span>
+                                    </div>
+                                    <div class="cursor-pointer group flex flex-col items-center justify-center p-4 rounded-xl border-2 border-gray-100 dark:border-gray-800 hover:border-primary transition-all transport-card"
+                                        data-value="bus">
+                                        <div
+                                            class="size-12 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-2 group-hover:bg-primary/10">
+                                            <span
+                                                class="material-symbols-outlined text-gray-600 dark:text-gray-400 group-hover:text-primary">directions_bus</span>
+                                        </div>
+                                        <span class="text-sm font-bold dark:text-white">버스</span>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div>
                                 <h3
                                     class="text-gray-900 dark:text-white text-xl font-bold mb-4 flex items-center gap-2">
@@ -698,7 +745,16 @@
             // End Date Picker Setup
             // ========================================
 
-            // Interest Cards Selection
+            // Transport Cards Selection (단일 선택)
+            const transportCards = document.querySelectorAll('.transport-card');
+            transportCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    transportCards.forEach(c => c.classList.remove('active-card'));
+                    card.classList.add('active-card');
+                });
+            });
+
+            // Interest Cards Selection (복수 선택)
             const interestCards = document.querySelectorAll('.style-card');
             interestCards.forEach(card => {
                 card.addEventListener('click', () => {
@@ -739,6 +795,9 @@
                 const firstDayDepartureTime = document.getElementById('firstDayDepartureTime').value;
                 const lastDayArrivalTime = document.getElementById('lastDayArrivalTime').value;
 
+                const transportCard = document.querySelector('.transport-card.active-card');
+                const transport = transportCard ? transportCard.dataset.value : 'car';
+
                 const styles = Array.from(document.querySelectorAll('.style-card.active-card')).map(el => el.dataset.value);
                 const companionBtn = Array.from(document.querySelectorAll('.companion-btn')).find(b => b.classList.contains('bg-primary'));
                 const companion = companionBtn ? companionBtn.dataset.value : 'alone';
@@ -749,6 +808,12 @@
 
                 if (!destination || !startDate || !endDate) {
                     alert('목적지와 날짜를 모두 입력해주세요.');
+                    isGenerating = false;
+                    return;
+                }
+
+                if (!transportCard) {
+                    alert('교통수단을 선택해주세요.');
                     isGenerating = false;
                     return;
                 }
@@ -780,6 +845,7 @@
                     endDate,
                     firstDayDepartureTime,
                     lastDayArrivalTime,
+                    transport,
                     companion,
                     style: styles,
                     scheduleType: 'relaxed'
@@ -799,6 +865,7 @@
                             endDate,
                             firstDayDepartureTime,
                             lastDayArrivalTime,
+                            transport,
                             companion,
                             styles: styles,
                             scheduleType: 'relaxed' // Default
@@ -831,6 +898,7 @@
                         firstDayDepartureTime,
                         lastDayArrivalTime,
                         endDate,
+                        transport,
                         companion,
                         styles
                     }));

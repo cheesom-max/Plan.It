@@ -19,7 +19,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { departure, destinations, startDate, endDate, firstDayDepartureTime, lastDayArrivalTime, companion, styles } = req.body;
+    const { departure, destinations, startDate, endDate, firstDayDepartureTime, lastDayArrivalTime, transport, companion, styles } = req.body;
     const GEMINI_API_KEY = process.env.GOOGLE_API_KEY;
 
     // ========================================
@@ -93,6 +93,7 @@ export default async function handler(req, res) {
       endDate,
       firstDayDepartureTime: firstDayDepartureTime || '08:00',
       lastDayArrivalTime: lastDayArrivalTime || '20:00',
+      transport: transport || 'car',
       tripDays,
       companion,
       styleTexts
