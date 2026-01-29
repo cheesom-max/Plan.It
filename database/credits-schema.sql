@@ -105,7 +105,7 @@ CREATE POLICY "Anyone can view active packages"
 -- 4. 기본 크레딧 패키지 데이터 삽입
 -- =====================================================
 INSERT INTO credit_packages (name, description, credits, price, sort_order) VALUES
-    ('무료 체험', '회원가입 보너스', 3, 0, 0),
+    ('무료 체험', '회원가입 보너스', 10, 0, 0),
     ('스타터', '여행 계획 10회', 10, 5000, 1),
     ('프로', '여행 계획 30회 (20% 할인)', 30, 12000, 2),
     ('프리미엄', '여행 계획 100회 (40% 할인)', 100, 30000, 3)
@@ -118,7 +118,7 @@ ON CONFLICT DO NOTHING;
 CREATE OR REPLACE FUNCTION handle_new_user_credits()
 RETURNS TRIGGER AS $$
 DECLARE
-    bonus_credits INTEGER := 3;  -- 무료 체험 크레딧
+    bonus_credits INTEGER := 10;  -- 회원가입 보너스 크레딧 (테스트용)
 BEGIN
     -- 크레딧 잔액 테이블에 레코드 생성
     -- 보너스는 구매가 아니므로 total_purchased=0 유지
@@ -127,7 +127,7 @@ BEGIN
 
     -- 보너스 지급 내역 기록
     INSERT INTO credit_transactions (user_id, amount, type, description, balance_after)
-    VALUES (NEW.id, bonus_credits, 'bonus', '회원가입 보너스 크레딧', bonus_credits);
+    VALUES (NEW.id, bonus_credits, 'bonus', '회원가입 보너스 크레딧 10개', bonus_credits);
 
     RETURN NEW;
 END;
@@ -277,7 +277,7 @@ BEGIN
     RAISE NOTICE '  - use_credits() : 크레딧 차감';
     RAISE NOTICE '';
     RAISE NOTICE '기본 패키지:';
-    RAISE NOTICE '  - 무료 체험: 3 크레딧 (0원)';
+    RAISE NOTICE '  - 무료 체험: 10 크레딧 (0원) - 회원가입 보너스';
     RAISE NOTICE '  - 스타터: 10 크레딧 (5,000원)';
     RAISE NOTICE '  - 프로: 30 크레딧 (12,000원)';
     RAISE NOTICE '  - 프리미엄: 100 크레딧 (30,000원)';
