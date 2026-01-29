@@ -213,11 +213,9 @@
 
                     renderItinerary(itinerary);
 
-                    // Init Map
+                    // Init Map with route
                     const firstDest = trip.destination.split(',')[0].trim();
-                    if (firstDest) {
-                        initMap(firstDest);
-                    }
+                    initMap(firstDest, itinerary);
 
                     // Update Save Button State (Already Saved)
                     const saveBtn = document.getElementById('saveItineraryBtn');
@@ -258,12 +256,14 @@
                 const itinerary = JSON.parse(itineraryData);
                 renderItinerary(itinerary);
 
-                // Initialize Map
+                // Initialize Map with route
                 if (tripInfo) {
                     const info = JSON.parse(tripInfo);
                     if (info.destinations && info.destinations.length > 0) {
-                        initMap(info.destinations[0]);
+                        initMap(info.destinations[0], itinerary);
                     }
+                } else {
+                    initMap(null, itinerary);
                 }
             } catch (e) {
                 console.error('Data parse error', e);
@@ -399,8 +399,13 @@
             }
         });
 
+        // Global map instance
+        let mapInstance = null;
+        let routeMarkers = [];
+        let routePolylines = [];
+
         // Initialize Leaflet Map
-        function initMap(destination) {
+        function initMap(destination, itinerary = null) {
             const mapContainer = document.getElementById('map');
             if (!mapContainer) return;
 
@@ -409,15 +414,18 @@
             let lng = 126.9780;
 
             // Create map
-            const map = L.map('map').setView([lat, lng], 12);
+            mapInstance = L.map('map').setView([lat, lng], 12);
 
             // Add tile layer
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap contributors'
-            }).addTo(map);
+            }).addTo(mapInstance);
 
-            // Geocode destination and center map
-            if (destination) {
+            // If itinerary has coordinates, show route
+            if (itinerary && itinerary.days) {
+                showRouteOnMap(itinerary);
+            } else if (destination) {
+                // Fallback: Geocode destination and center map
                 const destName = typeof destination === 'object' ? (destination.name || destination.displayName) : destination;
                 fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(destName)}&format=json&limit=1`, {
                     headers: { 'User-Agent': 'VoyageAI-TravelPlanner/1.0' }
@@ -426,14 +434,176 @@
                 .then(data => {
                     if (data && data.length > 0) {
                         const { lat: newLat, lon: newLng } = data[0];
-                        map.setView([parseFloat(newLat), parseFloat(newLng)], 12);
+                        mapInstance.setView([parseFloat(newLat), parseFloat(newLng)], 12);
                         L.marker([parseFloat(newLat), parseFloat(newLng)])
-                            .addTo(map)
+                            .addTo(mapInstance)
                             .bindPopup(`<b>${destName}</b>`)
                             .openPopup();
                     }
                 })
                 .catch(err => console.warn('Geocoding failed:', err));
+            }
+        }
+
+        // Day colors for route visualization
+        const dayColors = ['#137fec', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'];
+
+        // Show route on map with markers and polylines
+        function showRouteOnMap(itinerary) {
+            if (!mapInstance || !itinerary.days) return;
+
+            // Clear existing markers and polylines
+            routeMarkers.forEach(m => mapInstance.removeLayer(m));
+            routePolylines.forEach(p => mapInstance.removeLayer(p));
+            routeMarkers = [];
+            routePolylines = [];
+
+            const allCoords = [];
+
+            itinerary.days.forEach((day, dayIndex) => {
+                const dayColor = dayColors[dayIndex % dayColors.length];
+                const dayCoords = [];
+
+                if (day.schedule) {
+                    day.schedule.forEach((item, itemIndex) => {
+                        const place = item.place;
+                        let lat, lng, placeName;
+
+                        if (typeof place === 'object' && place.lat && place.lng) {
+                            lat = parseFloat(place.lat);
+                            lng = parseFloat(place.lng);
+                            placeName = place.name_ko || place.name || '장소';
+                        } else {
+                            return; // Skip if no coordinates
+                        }
+
+                        if (isNaN(lat) || isNaN(lng)) return;
+
+                        dayCoords.push([lat, lng]);
+                        allCoords.push([lat, lng]);
+
+                        // Create numbered marker
+                        const markerIcon = L.divIcon({
+                            className: 'custom-marker',
+                            html: `<div style="
+                                background: ${dayColor};
+                                color: white;
+                                width: 28px;
+                                height: 28px;
+                                border-radius: 50%;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                font-weight: bold;
+                                font-size: 12px;
+                                border: 2px solid white;
+                                box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                            ">${dayIndex + 1}-${itemIndex + 1}</div>`,
+                            iconSize: [28, 28],
+                            iconAnchor: [14, 14]
+                        });
+
+                        const marker = L.marker([lat, lng], { icon: markerIcon })
+                            .addTo(mapInstance)
+                            .bindPopup(`<b>Day ${day.day}</b><br>${placeName}<br><small>${item.time || ''}</small>`);
+
+                        routeMarkers.push(marker);
+                    });
+                }
+
+                // Draw polyline for this day's route
+                if (dayCoords.length > 1) {
+                    const polyline = L.polyline(dayCoords, {
+                        color: dayColor,
+                        weight: 4,
+                        opacity: 0.8,
+                        dashArray: '10, 5'
+                    }).addTo(mapInstance);
+                    routePolylines.push(polyline);
+                }
+            });
+
+            // Fit map to show all markers
+            if (allCoords.length > 0) {
+                const bounds = L.latLngBounds(allCoords);
+                mapInstance.fitBounds(bounds, { padding: [50, 50] });
+            }
+        }
+
+        // Show specific day's route
+        function showDayRoute(dayIndex, itinerary) {
+            if (!mapInstance || !itinerary.days || !itinerary.days[dayIndex]) return;
+
+            // Clear existing
+            routeMarkers.forEach(m => mapInstance.removeLayer(m));
+            routePolylines.forEach(p => mapInstance.removeLayer(p));
+            routeMarkers = [];
+            routePolylines = [];
+
+            const day = itinerary.days[dayIndex];
+            const dayColor = dayColors[dayIndex % dayColors.length];
+            const dayCoords = [];
+
+            if (day.schedule) {
+                day.schedule.forEach((item, itemIndex) => {
+                    const place = item.place;
+                    let lat, lng, placeName;
+
+                    if (typeof place === 'object' && place.lat && place.lng) {
+                        lat = parseFloat(place.lat);
+                        lng = parseFloat(place.lng);
+                        placeName = place.name_ko || place.name || '장소';
+                    } else {
+                        return;
+                    }
+
+                    if (isNaN(lat) || isNaN(lng)) return;
+
+                    dayCoords.push([lat, lng]);
+
+                    const markerIcon = L.divIcon({
+                        className: 'custom-marker',
+                        html: `<div style="
+                            background: ${dayColor};
+                            color: white;
+                            width: 32px;
+                            height: 32px;
+                            border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-weight: bold;
+                            font-size: 14px;
+                            border: 3px solid white;
+                            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                        ">${itemIndex + 1}</div>`,
+                        iconSize: [32, 32],
+                        iconAnchor: [16, 16]
+                    });
+
+                    const marker = L.marker([lat, lng], { icon: markerIcon })
+                        .addTo(mapInstance)
+                        .bindPopup(`<b>${placeName}</b><br><small>${item.time || ''}</small><br>${item.description || ''}`);
+
+                    routeMarkers.push(marker);
+                });
+            }
+
+            // Draw polyline
+            if (dayCoords.length > 1) {
+                const polyline = L.polyline(dayCoords, {
+                    color: dayColor,
+                    weight: 5,
+                    opacity: 0.9,
+                    dashArray: '12, 6'
+                }).addTo(mapInstance);
+                routePolylines.push(polyline);
+            }
+
+            // Fit bounds
+            if (dayCoords.length > 0) {
+                const bounds = L.latLngBounds(dayCoords);
+                mapInstance.fitBounds(bounds, { padding: [60, 60] });
             }
         }
 
@@ -463,17 +633,40 @@
                 mainContent.appendChild(titleDiv);
             }
 
+            // Store itinerary for map interactions
+            window.currentItinerary = data;
+
+            // Add "Show All" button
+            const showAllBtn = document.createElement('button');
+            showAllBtn.className = 'w-full flex items-center gap-3 px-3 py-3 rounded-xl bg-primary/10 hover:bg-primary/20 text-sm font-bold text-primary text-left mb-2';
+            showAllBtn.innerHTML = `
+                <span class="material-symbols-outlined text-xl">map</span>
+                전체 동선 보기
+            `;
+            showAllBtn.onclick = () => {
+                if (mapInstance && window.currentItinerary) {
+                    showRouteOnMap(window.currentItinerary);
+                }
+            };
+            sidebarList.appendChild(showAllBtn);
+
             if (Array.isArray(data.days)) {
                 data.days.forEach((day, index) => {
+                    const dayColor = dayColors[index % dayColors.length];
+
                     // Sidebar Item
                     const sbItem = document.createElement('button');
                     sbItem.className = 'w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-primary/5 text-sm font-medium text-[#4c739a] text-left';
                     sbItem.innerHTML = `
-                            <span class="material-symbols-outlined text-xl text-gray-400">calendar_today</span>
+                            <span class="material-symbols-outlined text-xl" style="color: ${dayColor}">calendar_today</span>
                             Day ${day.day}: ${day.theme || '일정'}
                        `;
                     sbItem.onclick = () => {
                         document.getElementById(`day-${day.day}`).scrollIntoView({ behavior: 'smooth' });
+                        // Show only this day's route
+                        if (mapInstance && window.currentItinerary) {
+                            showDayRoute(index, window.currentItinerary);
+                        }
                     };
                     sidebarList.appendChild(sbItem);
 
