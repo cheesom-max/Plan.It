@@ -351,9 +351,18 @@
                             <h3
                                 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider mb-3">
                                 여행 설정</h3>
-                            <!-- Destination Input -->
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="w-full">
+                            <!-- Departure & Destination Input -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label
+                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">출발지</label>
+                                    <div class="relative">
+                                        <input type="text" id="departureInput"
+                                            class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-700"
+                                            placeholder="어디서 출발하시나요?" value="서울">
+                                    </div>
+                                </div>
+                                <div>
                                     <label
                                         class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">목적지</label>
                                     <div class="relative">
@@ -361,6 +370,35 @@
                                             class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-700"
                                             placeholder="어디로 떠나시나요?">
                                     </div>
+                                </div>
+                            </div>
+                            <!-- Arrival & Departure Time -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label
+                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">첫날 도착 예정 시간</label>
+                                    <select id="arrivalTime"
+                                        class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-700">
+                                        <option value="08:00">오전 8시 (이른 아침)</option>
+                                        <option value="10:00" selected>오전 10시</option>
+                                        <option value="12:00">정오 12시</option>
+                                        <option value="14:00">오후 2시</option>
+                                        <option value="16:00">오후 4시</option>
+                                        <option value="18:00">오후 6시 (저녁)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">마지막날 출발 예정 시간</label>
+                                    <select id="departureTime"
+                                        class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-700">
+                                        <option value="12:00">정오 12시 (이른 출발)</option>
+                                        <option value="14:00">오후 2시</option>
+                                        <option value="16:00">오후 4시</option>
+                                        <option value="18:00" selected>오후 6시</option>
+                                        <option value="20:00">오후 8시</option>
+                                        <option value="22:00">오후 10시 (늦은 출발)</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -694,9 +732,12 @@
                 }
                 isGenerating = true;
                 // Collect Data
+                const departure = document.getElementById('departureInput').value;
                 const destination = document.getElementById('destinationInput').value;
                 const startDate = document.getElementById('startDate').value;
                 const endDate = document.getElementById('endDate').value;
+                const arrivalTime = document.getElementById('arrivalTime').value;
+                const departureTime = document.getElementById('departureTime').value;
 
                 const styles = Array.from(document.querySelectorAll('.style-card.active-card')).map(el => el.dataset.value);
                 const companionBtn = Array.from(document.querySelectorAll('.companion-btn')).find(b => b.classList.contains('bg-primary'));
@@ -708,6 +749,7 @@
 
                 if (!destination || !startDate || !endDate) {
                     alert('목적지와 날짜를 모두 입력해주세요.');
+                    isGenerating = false;
                     return;
                 }
 
@@ -732,9 +774,12 @@
                 // Debugging logs
                 console.log('Sending request to /api/generate-itinerary');
                 console.log('Payload:', {
+                    departure,
                     destinations: [destination],
                     startDate,
                     endDate,
+                    arrivalTime,
+                    departureTime,
                     companion,
                     style: styles,
                     scheduleType: 'relaxed'
@@ -748,9 +793,12 @@
                             'Authorization': `Bearer ${accessToken}`
                         },
                         body: JSON.stringify({
+                            departure,
                             destinations: [{ name: destination, displayName: destination }],
                             startDate,
                             endDate,
+                            arrivalTime,
+                            departureTime,
                             companion,
                             styles: styles,
                             scheduleType: 'relaxed' // Default
@@ -777,8 +825,11 @@
                     // Save to LocalStorage to pass to Itinerary Page
                     localStorage.setItem('travelItinerary', JSON.stringify(data));
                     localStorage.setItem('tripInfo', JSON.stringify({
+                        departure,
                         destinations: [destination],
                         startDate,
+                        arrivalTime,
+                        departureTime,
                         endDate,
                         companion,
                         styles

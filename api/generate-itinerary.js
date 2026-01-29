@@ -19,7 +19,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { destinations, startDate, endDate, companion, styles } = req.body;
+    const { departure, destinations, startDate, endDate, arrivalTime, departureTime, companion, styles } = req.body;
     const GEMINI_API_KEY = process.env.GOOGLE_API_KEY;
 
     // ========================================
@@ -87,9 +87,12 @@ export default async function handler(req, res) {
     const destinationTexts = destinationsToText(destinations);
 
     const prompt = generateItineraryPrompt({
+      departure: departure || '서울',
       destinationTexts,
       startDate,
       endDate,
+      arrivalTime: arrivalTime || '10:00',
+      departureTime: departureTime || '18:00',
       tripDays,
       companion,
       styleTexts
